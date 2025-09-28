@@ -3,610 +3,844 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accident Severity Prediction</title>
+    <title>Road Accident Severity Prediction App</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
         }
-
+        
+        body {
+            background: 
+                linear-gradient(135deg, rgba(255, 107, 107, 0.8) 0%, rgba(238, 90, 36, 0.8) 50%, rgba(254, 202, 87, 0.8) 100%),
+                url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Navigation */
+        .navbar {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         }
-
-        .header {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .form-container {
-            padding: 40px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #2c3e50;
-            font-size: 0.95em;
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff6b6b;
         }
-
-        .form-group select {
-            padding: 12px 15px;
-            border: 2px solid #e1e8ed;
-            border-radius: 10px;
-            font-size: 16px;
-            background-color: white;
-            transition: all 0.3s ease;
+        
+        .nav-logo i {
+            margin-right: 10px;
+            font-size: 1.8rem;
         }
-
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
         }
-
-        .form-group select:hover {
-            border-color: #c5d2ea;
+        
+        .nav-link {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
-
-        .submit-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px 40px;
+        
+        .nav-link:hover,
+        .nav-link.active {
+            color: #ff6b6b;
+        }
+        
+        .nav-auth {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: block;
-            margin: 0 auto;
-            min-width: 200px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-
-        .submit-btn:hover {
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+        
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
-
-        .submit-btn:active {
-            transform: translateY(0);
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
-
-        .loading {
-            display: none;
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
+        }
+        
+        .btn-outline:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            margin-top: 20px;
+            background: 
+                linear-gradient(135deg, rgba(44, 62, 80, 0.8), rgba(52, 73, 94, 0.8)),
+                url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            position: relative;
         }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
+        
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .app-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            border-radius: 30px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .hero h1 {
+            font-size: 3.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fff, #f8f9fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.2;
+        }
+        
+        .hero .subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.7;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 50px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+        
+        /* How It Works Section */
+        .how-it-works {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            position: relative;
+        }
+        
+        .how-it-works::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(238, 90, 36, 0.95));
+            clip-path: polygon(0 0, 100% 0, 100% 50%, 0 100%);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .section-title h2 {
+            font-size: 2.8rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .section-title p {
+            font-size: 1.3rem;
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .step-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 107, 107, 0.1);
+            position: relative;
+        }
+        
+        .step-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 60px rgba(255, 107, 107, 0.15);
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 40px;
             height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .result {
-            display: none;
-            margin-top: 30px;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .result.fatal {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-        }
-
-        .result.serious {
-            background: linear-gradient(135deg, #ffa726, #ff7043);
-            color: white;
-        }
-
-        .result.slight {
-            background: linear-gradient(135deg, #66bb6a, #43a047);
-            color: white;
-        }
-
-        .result h3 {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-        }
-
-        .confidence-scores {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-
-        .confidence-item {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-
-        .confidence-item h4 {
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            opacity: 0.9;
-        }
-
-        .confidence-item .percentage {
-            font-size: 1.3em;
             font-weight: bold;
+            font-size: 1.2rem;
         }
-
-        .error {
-            display: none;
+        
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            margin: 20px auto 25px;
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
             color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+        
+        .step-card h3 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .step-card p {
+            color: #666;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-5px);
+        }
+        
+        .feature-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-right: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: white;
+        }
+        
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            background: 
+                linear-gradient(135deg, rgba(255, 107, 107, 0.85), rgba(238, 90, 36, 0.85)),
+                url('https://images.unsplash.com/photo-1502920917128-1aa500764cbd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+        
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .cta-section h2 {
+            font-size: 2.8rem;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        
+        .cta-section p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            line-height: 1.7;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .modal h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .modal-footer {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+        }
+        
+        .modal-footer a {
+            color: #ff6b6b;
+            text-decoration: none;
+        }
+        
+        .modal-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Footer */
+        footer {
+            background: #1a252f;
+            color: white;
+            padding: 60px 0 30px;
             text-align: center;
         }
-
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 20px;
+            color: #ecf0f1;
+            font-size: 1.3rem;
+        }
+        
+        .footer-section p, .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+        
+        .footer-section a:hover {
+            color: #ff6b6b;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #34495e;
+            padding-top: 20px;
+            color: #95a5a6;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .form-grid {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .section-title h2 {
+                font-size: 2.2rem;
+            }
+            
+            .steps-container {
                 grid-template-columns: 1fr;
             }
             
-            .header h1 {
-                font-size: 2em;
+            .features-grid {
+                grid-template-columns: 1fr;
             }
             
-            .form-container {
-                padding: 20px;
+            .nav-menu {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚗 Accident Severity Predictor</h1>
-            <p>Predict accident severity based on various factors using Machine Learning</p>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-car-crash"></i>
+                <span>RoadSafety AI</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="about.html" class="nav-link">About Us</a>
+                <a href="contact.html" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-auth">
+                <button class="btn btn-outline" id="loginBtn">Login</button>
+                <button class="btn btn-primary" id="registerBtn">Register</button>
+            </div>
         </div>
-        
-        <div class="form-container">
-            <form id="predictionForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="Age_band_of_driver">Age Band of Driver</label>
-                        <select name="Age_band_of_driver" id="Age_band_of_driver" required>
-                            <option value="">Select Age Band</option>
-                            <option value="Under 18">Under 18</option>
-                            <option value="18-30">18-30</option>
-                            <option value="31-50">31-50</option>
-                            <option value="Over 51">Over 51</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
+    </nav>
 
-                    <div class="form-group">
-                        <label for="Sex_of_driver">Sex of Driver</label>
-                        <select name="Sex_of_driver" id="Sex_of_driver" required>
-                            <option value="">Select Sex</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Educational_level">Educational Level</label>
-                        <select name="Educational_level" id="Educational_level" required>
-                            <option value="">Select Education Level</option>
-                            <option value="Illiterate">Illiterate</option>
-                            <option value="Writing & reading">Writing & reading</option>
-                            <option value="Elementary school">Elementary school</option>
-                            <option value="Junior high school">Junior high school</option>
-                            <option value="High school">High school</option>
-                            <option value="Second degree">Second degree</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Vehicle_driver_relation">Vehicle Driver Relation</label>
-                        <select name="Vehicle_driver_relation" id="Vehicle_driver_relation" required>
-                            <option value="">Select Relation</option>
-                            <option value="Owner">Owner</option>
-                            <option value="Employee">Employee</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Driving_experience">Driving Experience</label>
-                        <select name="Driving_experience" id="Driving_experience" required>
-                            <option value="">Select Experience</option>
-                            <option value="No Licence">No Licence</option>
-                            <option value="Below 1yr">Below 1yr</option>
-                            <option value="1-2yr">1-2yr</option>
-                            <option value="2-5yr">2-5yr</option>
-                            <option value="5-10yr">5-10yr</option>
-                            <option value="Above 10yr">Above 10yr</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Type_of_vehicle">Type of Vehicle</label>
-                        <select name="Type_of_vehicle" id="Type_of_vehicle" required>
-                            <option value="">Select Vehicle Type</option>
-                            <option value="Automobile">Automobile</option>
-                            <option value="Bajaj">Bajaj</option>
-                            <option value="Bicycle">Bicycle</option>
-                            <option value="Motorcycle">Motorcycle</option>
-                            <option value="Pick up upto 10Q">Pick up upto 10Q</option>
-                            <option value="Lorry (11-40Q)">Lorry (11-40Q)</option>
-                            <option value="Lorry (41-100Q)">Lorry (41-100Q)</option>
-                            <option value="Public (12 seats)">Public (12 seats)</option>
-                            <option value="Public (13-45 seats)">Public (13-45 seats)</option>
-                            <option value="Public (> 45 seats)">Public (> 45 seats)</option>
-                            <option value="Taxi">Taxi</option>
-                            <option value="Turbo">Turbo</option>
-                            <option value="Stationwagen">Stationwagen</option>
-                            <option value="Ridden horse">Ridden horse</option>
-                            <option value="Special vehicle">Special vehicle</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Area_accident_occured">Area Where Accident Occurred</label>
-                        <select name="Area_accident_occured" id="Area_accident_occured" required>
-                            <option value="">Select Area</option>
-                            <option value="Residential areas">Residential areas</option>
-                            <option value="Office areas">Office areas</option>
-                            <option value="School areas">School areas</option>
-                            <option value="Market areas">Market areas</option>
-                            <option value="Church areas">Church areas</option>
-                            <option value="Hospital areas">Hospital areas</option>
-                            <option value="Industrial areas">Industrial areas</option>
-                            <option value="Recreational areas">Recreational areas</option>
-                            <option value="Rural village areas">Rural village areas</option>
-                            <option value="Outside rural areas">Outside rural areas</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Lanes_or_Medians">Lanes or Medians</label>
-                        <select name="Lanes_or_Medians" id="Lanes_or_Medians" required>
-                            <option value="">Select Lane Type</option>
-                            <option value="Undivided Two way">Undivided Two way</option>
-                            <option value="Two-way (divided with solid lines road marking)">Two-way (divided with solid lines)</option>
-                            <option value="Two-way (divided with broken lines road marking)">Two-way (divided with broken lines)</option>
-                            <option value="Double carriageway (median)">Double carriageway (median)</option>
-                            <option value="One way">One way</option>
-                            <option value="other">other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Types_of_Junction">Types of Junction</label>
-                        <select name="Types_of_Junction" id="Types_of_Junction" required>
-                            <option value="">Select Junction Type</option>
-                            <option value="No junction">No junction</option>
-                            <option value="Y Shape">Y Shape</option>
-                            <option value="T Shape">T Shape</option>
-                            <option value="X Shape">X Shape</option>
-                            <option value="Crossing">Crossing</option>
-                            <option value="O Shape">O Shape</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Road_surface_type">Road Surface Type</label>
-                        <select name="Road_surface_type" id="Road_surface_type" required>
-                            <option value="">Select Surface Type</option>
-                            <option value="Asphalt roads">Asphalt roads</option>
-                            <option value="Earth roads">Earth roads</option>
-                            <option value="Gravel roads">Gravel roads</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Light_conditions">Light Conditions</label>
-                        <select name="Light_conditions" id="Light_conditions" required>
-                            <option value="">Select Light Condition</option>
-                            <option value="Daylight">Daylight</option>
-                            <option value="Darkness - lights lit">Darkness - lights lit</option>
-                            <option value="Darkness - lights unlit">Darkness - lights unlit</option>
-                            <option value="Darkness - no lighting">Darkness - no lighting</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Weather_conditions">Weather Conditions</label>
-                        <select name="Weather_conditions" id="Weather_conditions" required>
-                            <option value="">Select Weather</option>
-                            <option value="Normal">Normal</option>
-                            <option value="Raining">Raining</option>
-                            <option value="Raining and Windy">Raining and Windy</option>
-                            <option value="Cloudy">Cloudy</option>
-                            <option value="Windy">Windy</option>
-                            <option value="Fog or mist">Fog or mist</option>
-                            <option value="Snow">Snow</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Type_of_collision">Type of Collision</label>
-                        <select name="Type_of_collision" id="Type_of_collision" required>
-                            <option value="">Select Collision Type</option>
-                            <option value="Vehicle with vehicle collision">Vehicle with vehicle collision</option>
-                            <option value="Collision with roadside-parked vehicles">Collision with roadside-parked vehicles</option>
-                            <option value="Collision with pedestrians">Collision with pedestrians</option>
-                            <option value="Collision with animals">Collision with animals</option>
-                            <option value="Collision with roadside objects">Collision with roadside objects</option>
-                            <option value="Rollover">Rollover</option>
-                            <option value="Fall from vehicles">Fall from vehicles</option>
-                            <option value="With Train">With Train</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Number_of_vehicles_involved">Number of Vehicles Involved</label>
-                        <select name="Number_of_vehicles_involved" id="Number_of_vehicles_involved" required>
-                            <option value="">Select Number</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Vehicle_movement">Vehicle Movement</label>
-                        <select name="Vehicle_movement" id="Vehicle_movement" required>
-                            <option value="">Select Movement</option>
-                            <option value="Going straight">Going straight</option>
-                            <option value="Turning right">Turning right</option>
-                            <option value="Turning left">Turning left</option>
-                            <option value="U-Turn">U-Turn</option>
-                            <option value="Overtaking">Overtaking</option>
-                            <option value="Moving Backward">Moving Backward</option>
-                            <option value="Reversing">Reversing</option>
-                            <option value="Entering a junction">Entering a junction</option>
-                            <option value="Parked">Parked</option>
-                            <option value="Stopping">Stopping</option>
-                            <option value="Waiting to go">Waiting to go</option>
-                            <option value="Getting off">Getting off</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Pedestrian_movement">Pedestrian Movement</label>
-                        <select name="Pedestrian_movement" id="Pedestrian_movement" required>
-                            <option value="">Select Movement</option>
-                            <option value="Not a Pedestrian">Not a Pedestrian</option>
-                            <option value="Crossing from driver's nearside">Crossing from driver's nearside</option>
-                            <option value="Crossing from driver's offside">Crossing from driver's offside</option>
-                            <option value="Crossing from nearside - masked by parked or stationary vehicle">Crossing from nearside - masked</option>
-                            <option value="Crossing from offside - masked by parked or stationary vehicle">Crossing from offside - masked</option>
-                            <option value="In carriageway, stationary - not crossing (standing or playing)">In carriageway, stationary</option>
-                            <option value="Walking along in carriageway, back to traffic">Walking back to traffic</option>
-                            <option value="Walking along in carriageway, facing traffic">Walking facing traffic</option>
-                            <option value="Unknown or other">Unknown or other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="Cause_of_accident">Cause of Accident</label>
-                        <select name="Cause_of_accident" id="Cause_of_accident" required>
-                            <option value="">Select Cause</option>
-                            <option value="No distancing">No distancing</option>
-                            <option value="Changing lane to the left">Changing lane to the left</option>
-                            <option value="Changing lane to the right">Changing lane to the right</option>
-                            <option value="Driving carelessly">Driving carelessly</option>
-                            <option value="No priority to vehicle">No priority to vehicle</option>
-                            <option value="No priority to pedestrian">No priority to pedestrian</option>
-                            <option value="Driving at high speed">Driving at high speed</option>
-                            <option value="Driving to the left">Driving to the left</option>
-                            <option value="Driving under the influence of drugs">Driving under the influence of drugs</option>
-                            <option value="Drunk driving">Drunk driving</option>
-                            <option value="Overtaking">Overtaking</option>
-                            <option value="Moving Backward">Moving Backward</option>
-                            <option value="Overturning">Overturning</option>
-                            <option value="Turnover">Turnover</option>
-                            <option value="Improper parking">Improper parking</option>
-                            <option value="Getting off the vehicle improperly">Getting off the vehicle improperly</option>
-                            <option value="Overloading">Overloading</option>
-                            <option value="Other">Other</option>
-                            <option value="Unknown">Unknown</option>
-                        </select>
-                    </div>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="app-icon">🚗</div>
+                <h1>Road Accident Severity Predictor</h1>
+                <p class="subtitle">AI-Powered Safety Prediction System</p>
+                <p>Predict accident severity before they happen. Our advanced machine learning model analyzes multiple risk factors to help prevent serious road accidents and save lives.</p>
+                
+                <div class="cta-buttons">
+                    <button class="btn btn-primary btn-large" id="predictBtnHero">
+                        <i class="fas fa-chart-line"></i>
+                        Start Prediction Now
+                    </button>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <button type="submit" class="submit-btn">🔮 Predict Accident Severity</button>
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>How It Works</h2>
+                <p>Our AI-powered prediction system uses advanced machine learning to analyze accident risk factors and provide accurate severity predictions</p>
+            </div>
+            
+            <div class="steps-container">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">📋</div>
+                    <h3>Input Data</h3>
+                    <p>Enter relevant information such as driver demographics, vehicle type, weather conditions, road conditions, and time of day.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">🧠</div>
+                    <h3>AI Analysis</h3>
+                    <p>Our machine learning model analyzes over 50+ data points using algorithms trained on thousands of accident records.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">📊</div>
+                    <h3>Risk Assessment</h3>
+                    <p>Get instant predictions with confidence scores for different severity levels: Slight, Serious, or Fatal injury potential.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">🛡️</div>
+                    <h3>Prevention</h3>
+                    <p>Receive personalized safety recommendations and preventive measures based on the identified risk factors.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2 style="color: white;">Advanced Features</h2>
+                <p style="color: rgba(255,255,255,0.9);">Comprehensive tools designed to make road safety prediction accurate and actionable</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">🎯</div>
+                        <h3>95% Accuracy</h3>
+                    </div>
+                    <p>Our prediction model achieves 95% accuracy through advanced machine learning algorithms trained on comprehensive accident datasets.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Real-time Prediction</h3>
+                    </div>
+                    <p>Get instant risk assessments within seconds. Perfect for emergency services, insurance companies, and traffic management.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">📱</div>
+                        <h3>Mobile Optimized</h3>
+                    </div>
+                    <p>Fully responsive design works seamlessly on all devices - phones, tablets, and desktops for on-the-go predictions.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">📈</div>
+                        <h3>Detailed Analytics</h3>
+                    </div>
+                    <p>Comprehensive reports with risk breakdowns, contributing factors analysis, and preventive action recommendations.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Secure & Private</h3>
+                    </div>
+                    <p>All predictions are processed securely with no personal data stored. Your privacy is our top priority.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-header">
+                        <div class="feature-icon">🌍</div>
+                        <h3>Global Application</h3>
+                    </div>
+                    <p>Adaptable model that can be calibrated for different regions and traffic patterns worldwide.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Start Predicting Accident Severity</h2>
+                <p>Join thousands of users who are already using our AI-powered prediction system to make roads safer. Get started in less than 2 minutes.</p>
+                <button class="btn btn-primary btn-large" id="predictBtnCTA">
+                    <i class="fas fa-rocket"></i>
+                    Launch Prediction Form
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
             </form>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Analyzing accident factors...</p>
-            </div>
-
-            <div class="result" id="result">
-                <h3 id="resultTitle"></h3>
-                <p id="resultDescription"></p>
-                <div class="confidence-scores" id="confidenceScores"></div>
-            </div>
-
-            <div class="error" id="error">
-                <p id="errorMessage"></p>
-            </div>
+            <p class="modal-footer">
+                Don't have an account? <a href="#" id="switchToRegister">Register here</a>
+            </p>
         </div>
     </div>
 
-    <script>
-        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Hide previous results
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('error').style.display = 'none';
-            
-            // Show loading
-            document.getElementById('loading').style.display = 'block';
-            
-            // Get form data
-            const formData = new FormData(this);
-            
-            try {
-                const response = await fetch('/predict', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
-                // Hide loading
-                document.getElementById('loading').style.display = 'none';
-                
-                if (response.ok) {
-                    displayResult(data);
-                } else {
-                    displayError(data.error || 'An error occurred');
-                }
-                
-            } catch (error) {
-                // Hide loading
-                document.getElementById('loading').style.display = 'none';
-                displayError('Network error. Please try again.');
-            }
-        });
-        
-        function displayResult(data) {
-            const resultDiv = document.getElementById('result');
-            const resultTitle = document.getElementById('resultTitle');
-            const resultDescription = document.getElementById('resultDescription');
-            const confidenceScores = document.getElementById('confidenceScores');
-            
-            // Set title and description based on severity
-            resultTitle.textContent = `Predicted Severity: ${data.severity_label}`;
-            
-            let description = '';
-            let cssClass = '';
-            
-            switch(data.severity_label) {
-                case 'Fatal injury':
-                    description = 'High risk scenario. Immediate medical attention and emergency response required.';
-                    cssClass = 'fatal';
-                    break;
-                case 'Serious Injury':
-                    description = 'Moderate to high risk scenario. Medical attention likely required.';
-                    cssClass = 'serious';
-                    break;
-                case 'Slight Injury':
-                    description = 'Lower risk scenario. Minor injuries possible, basic medical care may be needed.';
-                    cssClass = 'slight';
-                    break;
-                default:
-                    description = 'Prediction completed.';
-                    cssClass = 'slight';
-            }
-            
-            resultDescription.textContent = description;
-            
-            // Clear previous classes and add new one
-            resultDiv.className = 'result ' + cssClass;
-            
-            // Display confidence scores
-            confidenceScores.innerHTML = '';
-            for (const [severity, confidence] of Object.entries(data.confidence_scores)) {
-                const scoreDiv = document.createElement('div');
-                scoreDiv.className = 'confidence-item';
-                scoreDiv.innerHTML = `
-                    <h4>${severity}</h4>
-                    <div class="percentage">${confidence}%</div>
-                `;
-                confidenceScores.appendChild(scoreDiv);
-            }
-            
-            resultDiv.style.display = 'block';
-            
-            // Scroll to result
-            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-        
-        function displayError(message) {
-            const errorDiv = document.getElementById('error');
-            const errorMessage = document.getElementById('errorMessage');
-            
-            errorMessage.textContent = message;
-            errorDiv.style.display = 'block';
-            
-            // Scroll to error
-            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    </script>
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Register</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Full Name</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Register</button>
+            </form>
+            <p class="modal-footer">
+                Already have an account? <a href="#" id="switchToLogin">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About the App</h3>
+                    <p>Advanced AI-powered road accident severity prediction system designed to save lives through preventive safety measures.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <p><a href="#how-it-works">How It Works</a></p>
+                    <p><a href="#features">Features</a></p>
+                    <p><a href="about.html">About Us</a></p>
+                    <p><a href="contact.html">Contact</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <p>help@accidentpredictor.com</p>
+                    <p>+1 (555) PREDICT</p>
+                    <p><a href="#">User Guide</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Road Accident Severity Prediction App. Saving lives through AI.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>

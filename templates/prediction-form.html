@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Accident Severity Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #7c3aed;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .user-name {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-container {
+            padding: 2.5rem;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            width: 100%;
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .btn-predict {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            display: none;
+        }
+
+        .severity-badge {
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+        }
+
+        .severity-slight { background: linear-gradient(135deg, #059669, #10b981); color: white; }
+        .severity-serious { background: linear-gradient(135deg, #d97706, #f59e0b); color: white; }
+        .severity-fatal { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; }
+
+        .confidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .confidence-item {
+            background: var(--light-color);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <div class="user-info" id="userInfo"></div>
+            <h1>AI Accident Severity Predictor</h1>
+            <p>Advanced machine learning analysis for traffic accident severity assessment</p>
+        </div>
+        
+        <div class="form-container">
+            <form id="predictionForm">
+                <!-- Driver Information -->
+                <div class="form-section">
+                    <div class="section-title">Driver Information</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Age Band of Driver</label>
+                            <select class="form-select" name="Age_band_of_driver" required>
+                                <option value="">Select Age Band</option>
+                                <option value="18-30">18-30 (0)</option>
+                                <option value="31-50">31-50 (1)</option>
+                                <option value="Under 18">Under 18 (2)</option>
+                                <option value="Over 51">Over 51 (3)</option>
+                                <option value="Unknown">Unknown (4)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sex of Driver</label>
+                            <select class="form-select" name="Sex_of_driver" required>
+                                <option value="">Select Gender</option>
+                                <option value="Female">Female (0)</option>
+                                <option value="Male">Male (1)</option>
+                                <option value="Unknown">Unknown (2)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Educational Level</label>
+                            <select class="form-select" name="Educational_level" required>
+                                <option value="">Select Education Level</option>
+                                <option value="Above high school">Above high school (0)</option>
+                                <option value="Junior high school">Junior high school (1)</option>
+                                <option value="Elementary school">Elementary school (2)</option>
+                                <option value="High school">High school (3)</option>
+                                <option value="Unknown">Unknown (4)</option>
+                                <option value="Illiterate">Illiterate (5)</option>
+                                <option value="Writing & reading">Writing & reading (6)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vehicle Driver Relation</label>
+                            <select class="form-select" name="Vehicle_driver_relation" required>
+                                <option value="">Select Relation</option>
+                                <option value="Employee">Employee (0)</option>
+                                <option value="Owner">Owner (1)</option>
+                                <option value="Other">Other (2)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience & Vehicle -->
+                <div class="form-section">
+                    <div class="section-title">Experience & Vehicle</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Driving Experience</label>
+                            <select class="form-select" name="Driving_experience" required>
+                                <option value="">Select Experience</option>
+                                <option value="1-2yr">1-2yr (0)</option>
+                                <option value="2-5yr">2-5yr (1)</option>
+                                <option value="5-10yr">5-10yr (2)</option>
+                                <option value="Above 10yr">Above 10yr (3)</option>
+                                <option value="Below 1yr">Below 1yr (4)</option>
+                                <option value="No Licence">No Licence (5)</option>
+                                <option value="Unknown">Unknown (6)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type of Vehicle</label>
+                            <select class="form-select" name="Type_of_vehicle" required>
+                                <option value="">Select Vehicle Type</option>
+                                <option value="Car">Car (0)</option>
+                                <option value="Bus">Bus (1)</option>
+                                <option value="Lorry">Lorry/Truck (2)</option>
+                                <option value="Motorcycle">Motorcycle (3)</option>
+                                <option value="Three_wheeler">Three Wheeler (4)</option>
+                                <option value="Bicycle">Bicycle (5)</option>
+                                <option value="Other">Other (6)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location & Road -->
+                <div class="form-section">
+                    <div class="section-title">Location & Road Details</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Area Where Accident Occurred</label>
+                            <select class="form-select" name="Area_accident_occured" required>
+                                <option value="">Select Area Type</option>
+                                <option value="Residential areas">Residential areas (0)</option>
+                                <option value="Office areas">Office areas (1)</option>
+                                <option value="Recreational areas">Recreational areas (2)</option>
+                                <option value="Industrial areas">Industrial areas (3)</option>
+                                <option value="School areas">School areas (4)</option>
+                                <option value="Market areas">Market areas (5)</option>
+                                <option value="Church areas">Church areas (6)</option>
+                                <option value="Hospital areas">Hospital areas (7)</option>
+                                <option value="Rural village areas">Rural village areas (8)</option>
+                                <option value="Outside rural areas">Outside rural areas (9)</option>
+                                <option value="Other">Other (10)</option>
+                                <option value="Unknown">Unknown (11)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Road Type (Lanes/Medians)</label>
+                            <select class="form-select" name="Lanes_or_Medians" required>
+                                <option value="">Select Road Type</option>
+                                <option value="Undivided Two way">Undivided Two way (0)</option>
+                                <option value="One way">One way (1)</option>
+                                <option value="Two-way (divided with broken lines road marking)">Two-way (broken lines) (2)</option>
+                                <option value="Two-way (divided with solid lines road marking)">Two-way (solid lines) (3)</option>
+                                <option value="Double carriageway (median)">Double carriageway (median) (4)</option>
+                                <option value="other">Other (5)</option>
+                                <option value="Unknown">Unknown (6)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Type of Junction</label>
+                            <select class="form-select" name="Types_of_Junction" required>
+                                <option value="">Select Junction</option>
+                                <option value="No junction">No junction (0)</option>
+                                <option value="Y Shape">Y Shape (1)</option>
+                                <option value="T Shape">T Shape (2)</option>
+                                <option value="X Shape">X Shape (3)</option>
+                                <option value="Crossing">Crossing (4)</option>
+                                <option value="O Shape">O Shape (Roundabout) (5)</option>
+                                <option value="Other">Other (6)</option>
+                                <option value="Unknown">Unknown (7)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Road Surface Type</label>
+                            <select class="form-select" name="Road_surface_type" required>
+                                <option value="">Select Surface</option>
+                                <option value="Asphalt roads">Asphalt roads (0)</option>
+                                <option value="Earth roads">Earth roads (1)</option>
+                                <option value="Gravel roads">Gravel roads (2)</option>
+                                <option value="Asphalt roads with some distress">Asphalt roads with distress (3)</option>
+                                <option value="Other">Other (4)</option>
+                                <option value="Unknown">Unknown (5)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Environmental Conditions -->
+                <div class="form-section">
+                    <div class="section-title">Environmental Conditions</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Light Conditions</label>
+                            <select class="form-select" name="Light_conditions" required>
+                                <option value="">Select Lighting</option>
+                                <option value="Daylight">Daylight (0)</option>
+                                <option value="Darkness - lights lit">Darkness - lights lit (1)</option>
+                                <option value="Darkness - lights unlit">Darkness - lights unlit (2)</option>
+                                <option value="Darkness - no lighting">Darkness - no lighting (3)</option>
+                                <option value="Unknown">Unknown (4)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weather Conditions</label>
+                            <select class="form-select" name="Weather_conditions" required>
+                                <option value="">Select Weather</option>
+                                <option value="Normal">Normal (0)</option>
+                                <option value="Raining">Raining (1)</option>
+                                <option value="Raining and Windy">Raining and Windy (2)</option>
+                                <option value="Cloudy">Cloudy (3)</option>
+                                <option value="Windy">Windy (4)</option>
+                                <option value="Snow">Snow (5)</option>
+                                <option value="Fog or mist">Fog or mist (6)</option>
+                                <option value="Other">Other (7)</option>
+                                <option value="Unknown">Unknown (8)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accident Details -->
+                <div class="form-section">
+                    <div class="section-title">Accident Details</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Type of Collision</label>
+                            <select class="form-select" name="Type_of_collision" required>
+                                <option value="">Select Collision Type</option>
+                                <option value="Vehicle with vehicle collision">Vehicle with vehicle collision (0)</option>
+                                <option value="Collision with roadside objects">Collision with roadside objects (1)</option>
+                                <option value="Collision with pedestrians">Collision with pedestrians (2)</option>
+                                <option value="Rollover">Rollover (3)</option>
+                                <option value="Collision with animals">Collision with animals (4)</option>
+                                <option value="Collision with roadside-parked vehicles">Collision with parked vehicles (5)</option>
+                                <option value="Fall from vehicles">Fall from vehicles (6)</option>
+                                <option value="With Train">With Train (7)</option>
+                                <option value="Other">Other (8)</option>
+                                <option value="Unknown">Unknown (9)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Number of Vehicles Involved</label>
+                            <select class="form-select" name="Number_of_vehicles_involved" required>
+                                <option value="">Select Count</option>
+                                <option value="1">1 (0)</option>
+                                <option value="2">2 (1)</option>
+                                <option value="3">3 (2)</option>
+                                <option value="4">4 (3)</option>
+                                <option value="6">6 (4)</option>
+                                <option value="7">7 (5)</option>
+                                <option value="Unknown">Unknown (6)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Vehicle Movement</label>
+                            <select class="form-select" name="Vehicle_movement" required>
+                                <option value="">Select Movement</option>
+                                <option value="Going straight">Going straight (0)</option>
+                                <option value="Turning left">Turning left (1)</option>
+                                <option value="Turning right">Turning right (2)</option>
+                                <option value="Overtaking">Overtaking (3)</option>
+                                <option value="Changing lane to the left">Changing lane to the left (4)</option>
+                                <option value="Changing lane to the right">Changing lane to the right (5)</option>
+                                <option value="U-Turn">U-Turn (6)</option>
+                                <option value="Moving Backward">Moving Backward/Reversing (7)</option>
+                                <option value="Parked">Parked (8)</option>
+                                <option value="Stopped">Stopped/Stopping (9)</option>
+                                <option value="Entering a junction">Entering a junction (10)</option>
+                                <option value="Getting off">Getting off (11)</option>
+                                <option value="Waiting to go">Waiting to go (12)</option>
+                                <option value="Overturning">Overturning (13)</option>
+                                <option value="Other">Other (14)</option>
+                                <option value="Unknown">Unknown (15)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pedestrian Movement</label>
+                            <select class="form-select" name="Pedestrian_movement" required>
+                                <option value="">Select Movement</option>
+                                <option value="Not a Pedestrian">Not a Pedestrian (0)</option>
+                                <option value="Crossing from driver's nearside">Crossing from driver's nearside (1)</option>
+                                <option value="Crossing from driver's offside">Crossing from driver's offside (2)</option>
+                                <option value="Unknown">Unknown (3)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Primary Cause of Accident</label>
+                            <select class="form-select" name="Cause_of_accident" required>
+                                <option value="">Select Primary Cause</option>
+                                <option value="No distancing">No distancing (0)</option>
+                                <option value="Changing lane to the left">Changing lane to the left (1)</option>
+                                <option value="Changing lane to the right">Changing lane to the right (2)</option>
+                                <option value="Overtaking">Overtaking (3)</option>
+                                <option value="No priority to vehicle">No priority to vehicle (4)</option>
+                                <option value="No priority to pedestrian">No priority to pedestrian (5)</option>
+                                <option value="Moving Backward">Moving Backward (6)</option>
+                                <option value="Overspeed">Overspeed (7)</option>
+                                <option value="Driving carelessly">Driving carelessly (8)</option>
+                                <option value="Driving at high speed">Driving at high speed (9)</option>
+                                <option value="Driving under the influence of drugs">Driving under influence of drugs (10)</option>
+                                <option value="Drunk driving">Drunk driving (11)</option>
+                                <option value="Overloading">Overloading (12)</option>
+                                <option value="Getting off the vehicle improperly">Getting off vehicle improperly (13)</option>
+                                <option value="Driving to the left">Driving to the left (14)</option>
+                                <option value="Improper parking">Improper parking (15)</option>
+                                <option value="Turnover">Turnover (16)</option>
+                                <option value="Overturning">Overturning (17)</option>
+                                <option value="Other">Other (18)</option>
+                                <option value="Unknown">Unknown (19)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="submit-container">
+                    <button type="submit" class="btn-predict" id="predictBtn">
+                        <i class="fas fa-brain"></i>
+                        Predict Severity
+                    </button>
+                </div>
+            </form>
+
+            <div class="validation-message" id="validationMessage"></div>
+
+            <div class="result-container" id="result">
+                <h4><i class="fas fa-chart-bar"></i> Prediction Result</h4>
+                <div id="predictionResult"></div>
+                <h5><i class="fas fa-percentage"></i> Confidence Scores</h5>
+                <div class="confidence-grid" id="confidenceGrid"></div>
+                
+                <div class="debug-info">
+                    <button type="button" class="debug-toggle" onclick="toggleDebug()">
+                        <i class="fas fa-code"></i> Show Debug Info
+                    </button>
+                    <div class="debug-content" id="debugContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+
+        if (!token || !user) {
+            alert('Please login to access this page');
+            window.location.href = '/';
+            throw new Error('Not authenticated');
+        }
+
+        // Display user info - safely parse JSON
+        let userData;
+        try {
+            userData = JSON.parse(user);
+            if (!userData || !userData.name) {
+                throw new Error('Invalid user data');
+            }
+        } catch (e) {
+            console.error('Failed to parse user data:', e);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            alert('Session data corrupted. Please login again.');
+            window.location.href = '/';
+            throw e;
+        }
+
+        document.getElementById('userInfo').innerHTML = `
+            <span class="user-name">Welcome, ${userData.name}!</span>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        `;
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            }
+        }
+
+        // Form validation function
+        function validateForm(formData) {
+            const errors = [];
+            const requiredFields = [
+                'Age_band_of_driver', 'Sex_of_driver', 'Educational_level',
+                'Vehicle_driver_relation', 'Driving_experience', 'Type_of_vehicle',
+                'Area_accident_occured', 'Lanes_or_Medians', 'Types_of_Junction',
+                'Road_surface_type', 'Light_conditions', 'Weather_conditions',
+                'Type_of_collision', 'Number_of_vehicles_involved', 'Vehicle_movement',
+                'Pedestrian_movement', 'Cause_of_accident'
+            ];
+
+            const fieldLabels = {
+                'Age_band_of_driver': 'Age Band of Driver',
+                'Sex_of_driver': 'Sex of Driver',
+                'Educational_level': 'Educational Level',
+                'Vehicle_driver_relation': 'Vehicle Driver Relation',
+                'Driving_experience': 'Driving Experience',
+                'Type_of_vehicle': 'Type of Vehicle',
+                'Area_accident_occured': 'Area Accident Occurred',
+                'Lanes_or_Medians': 'Lanes or Medians',
+                'Types_of_Junction': 'Types of Junction',
+                'Road_surface_type': 'Road Surface Type',
+                'Light_conditions': 'Light Conditions',
+                'Weather_conditions': 'Weather Conditions',
+                'Type_of_collision': 'Type of Collision',
+                'Number_of_vehicles_involved': 'Number of Vehicles Involved',
+                'Vehicle_movement': 'Vehicle Movement',
+                'Pedestrian_movement': 'Pedestrian Movement',
+                'Cause_of_accident': 'Cause of Accident'
+            };
+
+            // Check for missing required fields
+            requiredFields.forEach(field => {
+                if (!formData[field] || formData[field].trim() === '') {
+                    errors.push(`${fieldLabels[field]} is required`);
+                }
+            });
+
+            return errors;
+        }
+
+        // Show validation messages
+        function showValidationMessage(errors) {
+            const messageDiv = document.getElementById('validationMessage');
+            if (errors.length > 0) {
+                messageDiv.innerHTML = `
+                    <strong>Please complete the following fields:</strong>
+                    <ul style="margin: 0.5rem 0 0 1.5rem;">
+                        ${errors.map(error => `<li>${error}</li>`).join('')}
+                    </ul>
+                `;
+                messageDiv.style.display = 'block';
+                messageDiv.scrollIntoView({ behavior: 'smooth' });
+                return false;
+            } else {
+                messageDiv.style.display = 'none';
+                return true;
+            }
+        }
+
+        // Toggle debug information
+        function toggleDebug() {
+            const debugContent = document.getElementById('debugContent');
+            const debugToggle = document.querySelector('.debug-toggle');
+            
+            if (debugContent.style.display === 'none' || debugContent.style.display === '') {
+                debugContent.style.display = 'block';
+                debugToggle.innerHTML = '<i class="fas fa-code"></i> Hide Debug Info';
+            } else {
+                debugContent.style.display = 'none';
+                debugToggle.innerHTML = '<i class="fas fa-code"></i> Show Debug Info';
+            }
+        }
+
+        // Normalize input values to lowercase for backend consistency
+        function normalizeFormData(formData) {
+            const normalized = {};
+            
+            // Convert all keys and values to lowercase
+            Object.keys(formData).forEach(key => {
+                const lowercaseKey = key.toLowerCase();
+                let value = formData[key];
+                
+                // Convert value to lowercase and handle special cases
+                if (value && value !== '') {
+                    value = value.toString().toLowerCase().trim();
+                    
+                    // Handle specific field normalizations
+                    if (lowercaseKey === 'type_of_vehicle') {
+                        // Map common variations
+                        const vehicleMap = {
+                            'motorcycle': 'motorcycle',
+                            'motorbike': 'motorcycle',
+                            'three wheeler': 'three_wheeler',
+                            'three_wheeler': 'three_wheeler'
+                        };
+                        value = vehicleMap[value] || value;
+                    }
+                    
+                    if (lowercaseKey === 'area_accident_occured') {
+                        // Handle area naming - keep as lowercase
+                        value = value.replace(/\s+areas?$/, ''); // Remove trailing "area" or "areas"
+                        // Don't add "areas" suffix - let backend handle it
+                    }
+                }
+                
+                normalized[lowercaseKey] = value || '';
+            });
+            
+            return normalized;
+        }
+
+        // Form submission with comprehensive validation and error handling
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const predictBtn = document.getElementById('predictBtn');
+            const originalFormData = Object.fromEntries(new FormData(this).entries());
+            
+            // Validate form
+            const validationErrors = validateForm(originalFormData);
+            if (!showValidationMessage(validationErrors)) {
+                return; // Stop if validation fails
+            }
+            
+            // Normalize form data
+            const formData = normalizeFormData(originalFormData);
+            
+            predictBtn.disabled = true;
+            predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            console.log('Original form data:', originalFormData);
+            console.log('Normalized form data being sent:', formData);
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/predict', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    document.getElementById('result').style.display = 'block';
+                    
+                    // Determine severity class for styling
+                    let severityClass = 'slight';
+                    const severityLower = data.severity_label.toLowerCase();
+                    if (severityLower.includes('fatal')) {
+                        severityClass = 'fatal';
+                    } else if (severityLower.includes('serious')) {
+                        severityClass = 'serious';
+                    }
+                    
+                    // Display prediction result
+                    document.getElementById('predictionResult').innerHTML = `
+                        <div class="text-center">
+                            <h3>Predicted Severity Level:</h3>
+                            <div class="severity-badge severity-${severityClass}">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                ${data.severity_label}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Display confidence scores with progress bars
+                    document.getElementById('confidenceGrid').innerHTML = Object.entries(data.confidence)
+                        .sort(([,a], [,b]) => b - a) // Sort by confidence descending
+                        .map(([severity, confidence]) => {
+                            const isHighest = confidence === Math.max(...Object.values(data.confidence));
+                            return `
+                                <div class="confidence-item ${isHighest ? 'border-primary' : ''}">
+                                    <div class="confidence-label">${severity}</div>
+                                    <div class="confidence-value">${(confidence * 100).toFixed(1)}%</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${(confidence * 100).toFixed(1)}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    
+                    // Display debug information
+                    if (data.debug) {
+                        document.getElementById('debugContent').innerHTML = `
+                            <h6>Debug Information:</h6>
+                            <p><strong>Input Features Array:</strong> [${data.debug.input_features.join(', ')}]</p>
+                            <p><strong>Raw Prediction:</strong> ${data.debug.raw_prediction}</p>
+                            ${data.debug.missing_features?.length ? 
+                                `<p><strong>Missing Features:</strong> ${data.debug.missing_features.join(', ')}</p>` : ''
+                            }
+                            <details>
+                                <summary><strong>Feature Encoding Details:</strong></summary>
+                                <pre style="font-size: 0.8rem; margin-top: 0.5rem;">${JSON.stringify(data.debug.feature_debug, null, 2)}</pre>
+                            </details>
+                        `;
+                    }
+                    
+                    // Scroll to results
+                    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+                    
+                } else {
+                    console.error('API Error:', data);
+                    if (response.status === 401) {
+                        alert('Session expired. Please login again.');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/';
+                    } else {
+                        let errorMessage = 'Prediction failed. ';
+                        if (data.error) {
+                            errorMessage += data.error;
+                        } else if (data.message) {
+                            errorMessage += data.message;
+                        }
+                        
+                        alert(errorMessage);
+                        
+                        // Show debug info in console if available
+                        if (data.debug) {
+                            console.log('Debug info:', data.debug);
+                        }
+                        if (data.traceback) {
+                            console.log('Server traceback:', data.traceback);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Network/Connection error:', error);
+                alert(`Failed to connect to prediction service. Please check:\n\n1. Server is running on http://localhost:5000\n2. Your internet connection\n3. No firewall blocking the request\n\nError: ${error.message}`);
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.innerHTML = '<i class="fas fa-brain"></i> Predict Severity';
+            }
+        });
+
+        // Add real-time form validation feedback
+        document.querySelectorAll('.form-select').forEach(select => {
+            select.addEventListener('change', function() {
+                // Remove any previous validation styling
+                this.classList.remove('border-success', 'border-danger');
+                
+                if (this.value && this.value !== '') {
+                    this.classList.add('border-success');
+                    this.style.borderColor = 'var(--success-color)';
+                } else {
+                    this.classList.add('border-danger');
+                    this.style.borderColor = 'var(--danger-color)';
+                }
+                
+                // Update validation message in real-time
+                const formData = Object.fromEntries(new FormData(document.getElementById('predictionForm')).entries());
+                const errors = validateForm(formData);
+                showValidationMessage(errors);
+            });
+        });
+
+        // Auto-save form data to prevent loss
+        const FORM_STORAGE_KEY = 'accident_prediction_form_data';
+        
+        // Load saved form data on page load
+        function loadSavedFormData() {
+            try {
+                const savedData = localStorage.getItem(FORM_STORAGE_KEY);
+                if (savedData) {
+                    const formData = JSON.parse(savedData);
+                    Object.keys(formData).forEach(key => {
+                        const element = document.querySelector(`[name="${key}"]`);
+                        if (element && formData[key]) {
+                            element.value = formData[key];
+                            element.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not load saved form data:', e);
+            }
+        }
+        
+        // Save form data on change
+        function saveFormData() {
+            try {
+                const formData = Object.fromEntries(new FormData(document.getElementById('predictionForm')).entries());
+                localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
+            } catch (e) {
+                console.warn('Could not save form data:', e);
+            }
+        }
+        
+        // Clear saved data after successful prediction
+        function clearSavedFormData() {
+            try {
+                localStorage.removeItem(FORM_STORAGE_KEY);
+            } catch (e) {
+                console.warn('Could not clear saved form data:', e);
+            }
+        }
+        
+        // Add auto-save listeners
+        document.querySelectorAll('.form-select').forEach(select => {
+            select.addEventListener('change', saveFormData);
+        });
+        
+        // Load saved data on page load
+        loadSavedFormData();
+        
+        // Clear saved data on successful prediction
+        document.getElementById('predictionForm').addEventListener('submit', function() {
+            // Clear saved data after a short delay (after successful submission)
+            setTimeout(() => {
+                if (document.getElementById('result').style.display === 'block') {
+                    clearSavedFormData();
+                }
+            }, 2000);
+        });
+
+    </script>
+</body>
+</html>
