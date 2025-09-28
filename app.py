@@ -22,7 +22,7 @@ DB_CONFIG = {
     'port': 3306,
     'database': 'accident_user',
     'user': 'root',
-    'password': 'Abdullah@450'
+    'password': 'root'
 }
 
 def get_db_connection():
@@ -61,7 +61,7 @@ init_db()
 # ML MODEL LOADING
 # ========================================
 try:
-    with open('rf1_model.pkl', 'rb') as f:
+    with open('rf_model.pkl', 'rb') as f:
         model = pickle.load(f)
     print("✅ Model loaded successfully!")
 except FileNotFoundError:
@@ -410,7 +410,7 @@ def get_profile(user_id):
 # ========================================
 @app.route('/')
 def home():
-    return render_template('templates/index.html')
+    return render_template('/index.html')
 
 @app.route('/predict_form')
 def predict_form():
