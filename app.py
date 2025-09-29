@@ -22,7 +22,7 @@ DB_CONFIG = {
     'port': 3306,
     'database': 'accident_user',
     'user': 'root',
-    'password': 'root'
+    'password': 'Abdullah@450'
 }
 
 def get_db_connection():
@@ -61,200 +61,283 @@ init_db()
 # ML MODEL LOADING
 # ========================================
 try:
-    with open('rf_model.pkl', 'rb') as f:
-        model = pickle.load(f)
+    with open('rf2_model.pkl', 'rb') as f:
+        model = pickle.load(f)  # This should be your pipeline from the notebook
     print("✅ Model loaded successfully!")
+    print(f"Model type: {type(model)}")
 except FileNotFoundError:
-    print("⚠️ Model file not found. Please ensure rf1_model.pkl exists.")
+    print("⚠️ Model file not found. Please ensure rf_model.pkl exists.")
     model = None
 
-# ALL LOWERCASE Feature mappings based on your dataset
-FEATURE_MAPPINGS = {
-    'age_band_of_driver': {
-        '18-30': 0, '31-50': 1, 'under 18': 2, 'over 51': 3, 'unknown': 4
+# Expected feature columns in the exact order from your training data
+EXPECTED_COLUMNS = [
+    'Age_band_of_driver', 'Sex_of_driver', 'Educational_level',
+    'Vehicle_driver_relation', 'Driving_experience', 'Type_of_vehicle',
+    'Area_accident_occured', 'Lanes_or_Medians', 'Types_of_Junction',
+    'Road_surface_type', 'Light_conditions', 'Weather_conditions',
+    'Type_of_collision', 'Number_of_vehicles_involved', 'Vehicle_movement',
+    'Pedestrian_movement', 'Cause_of_accident'
+]
+
+# Value mappings to normalize input (frontend -> dataset format)
+VALUE_MAPPINGS = {
+    'Age_band_of_driver': {
+        '18-30': '18-30',
+        '31-50': '31-50', 
+        'under 18': 'under 18',
+        'over 51': 'over 51',
+        'unknown': 'unknown'
     },
-    'sex_of_driver': {
-        'female': 0, 'male': 1, 'unknown': 2
+    'Sex_of_driver': {
+        'male': 'male',
+        'female': 'female',
+        'unknown': 'unknown'
     },
-    'educational_level': {
-        'above high school': 0, 
-        'junior high school': 1, 
-        'elementary school': 2,
-        'high school': 3,
-        'unknown': 4,
-        'illiterate': 5,
-        'writing & reading': 6
+    'Educational_level': {
+        'above high school': 'above high school',
+        'junior high school': 'junior high school',
+        'elementary school': 'elementary school',
+        'high school': 'high school',
+        'unknown': 'unknown',
+        'illiterate': 'illiterate',
+        'writing & reading': 'writing & reading'
     },
-    'vehicle_driver_relation': {
-        'employee': 0, 'owner': 1, 'other': 2
+    'Vehicle_driver_relation': {
+        'employee': 'employee',
+        'owner': 'owner',
+        'other': 'other'
     },
-    'driving_experience': {
-        '1-2yr': 0, 
-        '2-5yr': 1, 
-        '5-10yr': 2, 
-        'above 10yr': 3,
-        'below 1yr': 4, 
-        'no licence': 5,
-        'unknown': 6
+    'Driving_experience': {
+        '1-2yr': '1-2yr',
+        '2-5yr': '2-5yr',
+        '5-10yr': '5-10yr',
+        'above 10yr': 'above 10yr',
+        'below 1yr': 'below 1yr',
+        'no licence': 'no licence',
+        'unknown': 'unknown'
     },
-    'type_of_vehicle': {
-        # Map frontend inputs to dataset values (all lowercase)
-        'car': 0, 'automobile': 0,
-        'bus': 1, 'public': 1,
-        'lorry': 2, 'truck': 2,
-        'motorcycle': 3, 'motorbike': 3, 'mootorbike': 3,
-        'three_wheeler': 4, 'bajaj': 4, 'turbo': 4,
-        'bicycle': 5,
-        'other': 6
+    'Type_of_vehicle': {
+        'car': 'car',
+        'automobile': 'car',
+        'bus': 'bus',
+        'public': 'bus',
+        'lorry': 'lorry',
+        'truck': 'lorry',
+        'motorcycle': 'motorcycle',
+        'mootorbike': 'mootorbike',
+        'three_wheeler': 'three_wheeler',
+        'three wheeler': 'three_wheeler',
+        'bajaj': 'three_wheeler',
+        'bicycle': 'bicycle',
+        'other': 'other'
     },
-    'area_accident_occured': {
-        'residential': 0, 'residential areas': 0,
-        'office areas': 1, 'office area': 1,
-        'recreational areas': 2,
-        'industrial areas': 3, 'industrial': 3,
-        'school areas': 4, 'school area': 4,
-        'market areas': 5, 'market area': 5,
-        'church areas': 6, 'church area': 6,
-        'hospital areas': 7, 'hospital area': 7,
-        'rural village areas': 8,
-        'outside rural areas': 9,
-        'other': 10,
-        'unknown': 11
+    'Area_accident_occured': {
+        'residential areas': 'residential areas',
+        'office areas': 'office areas',
+        'recreational areas': 'recreational areas',
+        'industrial areas': 'industrial areas',
+        'school areas': 'school areas',
+        'market areas': 'market areas',
+        'church areas': 'church areas',
+        'hospital areas': 'hospital areas',
+        'rural village areas': 'rural village areas',
+        'outside rural areas': 'outside rural areas',
+        'other': 'other',
+        'unknown': 'unknown'
     },
-    'lanes_or_medians': {
-        'undivided two way': 0, 'undivided': 0,
-        'one way': 1,
-        'two-way': 2, 'two-way (divided with broken lines road marking)': 2,
-        'two-way (divided with solid lines road marking)': 3,
-        'double carriageway (median)': 4, 'double carriageway': 4,
-        'other': 5,
-        'unknown': 6
+    'Lanes_or_Medians': {
+        'undivided two way': 'undivided two way',
+        'one way': 'one way',
+        'two-way (divided with broken lines road marking)': 'two-way (divided with broken lines road marking)',
+        'two-way (divided with solid lines road marking)': 'two-way (divided with solid lines road marking)',
+        'double carriageway (median)': 'double carriageway (median)',
+        'other': 'other',
+        'unknown': 'unknown'
     },
-    'types_of_junction': {
-        'no junction': 0,
-        'y shape': 1,
-        't shape': 2,
-        'x shape': 3,
-        'crossing': 4,
-        'o shape': 5,
-        'other': 6,
-        'unknown': 7
+    'Types_of_Junction': {
+        'no junction': 'no junction',
+        'y shape': 'y shape',
+        't shape': 't shape',
+        'x shape': 'x shape',
+        'crossing': 'crossing',
+        'o shape': 'o shape',
+        'other': 'other',
+        'unknown': 'unknown'
     },
-    'road_surface_type': {
-        'asphalt roads': 0,
-        'earth roads': 1,
-        'gravel roads': 2,
-        'asphalt roads with some distress': 3,
-        'other': 4,
-        'unknown': 5
+    'Road_surface_type': {
+        'asphalt roads': 'asphalt roads',
+        'earth roads': 'earth roads',
+        'gravel roads': 'gravel roads',
+        'asphalt roads with some distress': 'asphalt roads with some distress',
+        'other': 'other',
+        'unknown': 'unknown'
     },
-    'light_conditions': {
-        'daylight': 0,
-        'darkness': 1, 'darkness - lights lit': 1,
-        'darkness - lights unlit': 2,
-        'darkness - no lighting': 3,
-        'unknown': 4
+    'Light_conditions': {
+        'daylight': 'daylight',
+        'darkness - lights lit': 'darkness - lights lit',
+        'darkness - lights unlit': 'darkness - lights unlit',
+        'darkness - no lighting': 'darkness - no lighting',
+        'unknown': 'unknown'
     },
-    'weather_conditions': {
-        'normal': 0,
-        'raining': 1,
-        'raining and windy': 2,
-        'cloudy': 3,
-        'windy': 4,
-        'snow': 5,
-        'fog or mist': 6,
-        'other': 7,
-        'unknown': 8
+    'Weather_conditions': {
+        'normal': 'normal',
+        'raining': 'raining',
+        'raining and windy': 'raining and windy',
+        'cloudy': 'cloudy',
+        'windy': 'windy',
+        'snow': 'snow',
+        'fog or mist': 'fog or mist',
+        'other': 'other',
+        'unknown': 'unknown'
     },
-    'type_of_collision': {
-        'vehicle with vehicle collision': 0,
-        'collision with roadside objects': 1, 'collision with roadside object': 1,
-        'collision with pedestrians': 2,
-        'rollover': 3,
-        'collision with animals': 4,
-        'collision with roadside-parked vehicles': 5,
-        'fall from vehicles': 6,
-        'with train': 7,
-        'other': 8,
-        'unknown': 9
+    'Type_of_collision': {
+        'vehicle with vehicle collision': 'vehicle with vehicle collision',
+        'collision with roadside objects': 'collision with roadside objects',
+        'collision with pedestrians': 'collision with pedestrians',
+        'rollover': 'rollover',
+        'collision with animals': 'collision with animals',
+        'collision with roadside-parked vehicles': 'collision with roadside-parked vehicles',
+        'fall from vehicles': 'fall from vehicles',
+        'with train': 'with train',
+        'other': 'other',
+        'unknown': 'unknown'
     },
-    'number_of_vehicles_involved': {
-        '1': 0, '2': 1, '3': 2, '4': 3, '6': 4, '7': 5, 'unknown': 6
+    'Number_of_vehicles_involved': {
+        '1': 1,
+        '2': 2,
+        '3': 3,
+        '4': 4,
+        '6': 6,
+        '7': 7,
+        'unknown': 'unknown'
     },
-    'vehicle_movement': {
-        'going straight': 0,
-        'turning left': 1,
-        'turning right': 2,
-        'overtaking': 3,
-        'changing lane to the left': 4, 'changing left': 4,
-        'changing lane to the right': 5, 'changing right': 5,
-        'u-turn': 6, 'turnover': 6,
-        'moving backward': 7, 'moving backwards': 7, 'reversing': 7,
-        'parked': 8,
-        'stopped': 9, 'stopping': 9,
-        'entering a junction': 10,
-        'getting off': 11,
-        'waiting to go': 12,
-        'overturning': 13,
-        'other': 14,
-        'unknown': 15
+    'Vehicle_movement': {
+        'going straight': 'going straight',
+        'turning left': 'turning left',
+        'turning right': 'turning right',
+        'overtaking': 'overtaking',
+        'changing lane to the left': 'changing lane to the left',
+        'changing lane to the right': 'changing lane to the right',
+        'u-turn': 'u-turn',
+        'moving backward': 'moving backward',
+        'parked': 'parked',
+        'stopped': 'stopped',
+        'entering a junction': 'entering a junction',
+        'getting off': 'getting off',
+        'waiting to go': 'waiting to go',
+        'overturning': 'overturning',
+        'other': 'other',
+        'reversing':'reversing',
+        'turnover':'turnover',
+        'unknown': 'unknown'
     },
-    'pedestrian_movement': {
-        'not a pedestrian': 0,
-        'crossing from driver\'s nearside': 1, 'crossing from driver\'s ne': 1,
-        'crossing from driver\'s offside': 2,
-        'unknown': 3
+    'Pedestrian_movement': {
+        'not a pedestrian': 'not a pedestrian',
+        'crossing from driver\'s nearside': 'crossing from driver\'s nearside',
+        'crossing from driver\'s offside': 'crossing from driver\'s offside',
+        'unknown': 'unknown'
     },
-    'cause_of_accident': {
-        'no distancing': 0,
-        'changing lane to the left': 1, 'changing left': 1,
-        'changing lane to the right': 2, 'changing right': 2,
-        'overtaking': 3,
-        'no priority to vehicle': 4, 'no priority': 4,
-        'no priority to pedestrian': 5,
-        'moving backward': 6, 'moving backwards': 6, 'moving back': 6,
-        'overspeed': 7,
-        'driving carelessly': 8,
-        'driving at high speed': 9,
-        'driving under the influence of drugs': 10, 'driving under': 10,
-        'drunk driving': 11,
-        'overloading': 12,
-        'getting off the vehicle improperly': 13,
-        'driving to the left': 14,
-        'improper parking': 15,
-        'turnover': 16,
-        'overturning': 17,
-        'other': 18,
-        'unknown': 19
+    'Cause_of_accident': {
+        'no distancing': 'no distancing',
+        'changing lane to the left': 'changing lane to the left',
+        'changing lane to the right': 'changing lane to the right',
+        'overtaking': 'overtaking',
+        'no priority to vehicle': 'no priority to vehicle',
+        'no priority to pedestrian': 'no priority to pedestrian',
+        'moving backward': 'moving backward',
+        'overspeed': 'overspeed',
+        'driving carelessly': 'driving carelessly',
+        'driving at high speed': 'driving at high speed',
+        'driving under the influence of drugs': 'driving under the influence of drugs',
+        'drunk driving': 'drunk driving',
+        'overloading': 'overloading',
+        'getting off the vehicle improperly': 'getting off the vehicle improperly',
+        'driving to the left': 'driving to the left',
+        'improper parking': 'improper parking',
+        'turnover': 'turnover',
+        'overturning': 'overturning',
+        'other': 'other',
+        'unknown': 'unknown'
     }
 }
 
 SEVERITY_LABELS = {0: 'Fatal injury', 1: 'Serious Injury', 2: 'Slight Injury'}
 
-# Function to normalize and find matching key
-def find_match(value, mapping_dict, feature_name):
-    """Find matching key in mapping dict, all converted to lowercase"""
-    if value is None or value == '':
-        return mapping_dict.get('unknown', 0)
+def normalize_input_value(field_name, input_value):
+    """Normalize input value to match training data format"""
+    if input_value is None or input_value == '':
+        return 'unknown'
     
-    # Convert to lowercase and strip whitespace
-    value_clean = str(value).lower().strip()
+    # Convert to lowercase for matching
+    input_lower = str(input_value).lower().strip()
     
-    # Direct match
-    if value_clean in mapping_dict:
-        return mapping_dict[value_clean]
+    # Get mapping for this field
+    field_mapping = VALUE_MAPPINGS.get(field_name, {})
     
-    # Partial match for truncated values
-    for key in mapping_dict:
-        if value_clean in key or key in value_clean:
-            return mapping_dict[key]
+    # Try exact match first
+    for key, value in field_mapping.items():
+        if key.lower() == input_lower:
+            return value
     
-    # Log unmatched values for debugging
-    print(f"⚠️ No match found for '{value}' in {feature_name}")
-    print(f"   Available options: {list(mapping_dict.keys())}")
+    # Try partial match
+    for key, value in field_mapping.items():
+        if input_lower in key.lower() or key.lower() in input_lower:
+            return value
     
-    # Default to unknown or 0
-    return mapping_dict.get('unknown', 0)
+    print(f"⚠️ No match found for '{input_value}' in {field_name}, using 'unknown'")
+    return 'unknown'
+
+def prepare_input_dataframe(form_data):
+    """Prepare input DataFrame in the exact format expected by the model"""
+    
+    # Convert form field names to expected column names
+    field_name_mapping = {
+        'age_band_of_driver': 'Age_band_of_driver',
+        'sex_of_driver': 'Sex_of_driver',
+        'educational_level': 'Educational_level',
+        'vehicle_driver_relation': 'Vehicle_driver_relation',
+        'driving_experience': 'Driving_experience',
+        'type_of_vehicle': 'Type_of_vehicle',
+        'area_accident_occured': 'Area_accident_occured',
+        'lanes_or_medians': 'Lanes_or_Medians',
+        'types_of_junction': 'Types_of_Junction',
+        'road_surface_type': 'Road_surface_type',
+        'light_conditions': 'Light_conditions',
+        'weather_conditions': 'Weather_conditions',
+        'type_of_collision': 'Type_of_collision',
+        'number_of_vehicles_involved': 'Number_of_vehicles_involved',
+        'vehicle_movement': 'Vehicle_movement',
+        'pedestrian_movement': 'Pedestrian_movement',
+        'cause_of_accident': 'Cause_of_accident'
+    }
+    
+    # Prepare the data dictionary
+    prepared_data = {}
+    
+    for form_field, expected_column in field_name_mapping.items():
+        input_value = form_data.get(form_field)
+        normalized_value = normalize_input_value(expected_column, input_value)
+        prepared_data[expected_column] = normalized_value
+        
+        print(f"{form_field} -> {expected_column}: '{input_value}' -> '{normalized_value}'")
+    
+    # Create DataFrame with single row
+    input_df = pd.DataFrame([prepared_data])
+    
+    # Ensure all expected columns are present in correct order
+    for col in EXPECTED_COLUMNS:
+        if col not in input_df.columns:
+            input_df[col] = 'unknown'
+            print(f"⚠️ Missing column {col}, filled with 'unknown'")
+    
+    # Reorder columns to match training data
+    input_df = input_df[EXPECTED_COLUMNS]
+    
+    print(f"📊 Input DataFrame shape: {input_df.shape}")
+    print(f"📊 Input DataFrame columns: {list(input_df.columns)}")
+    print(f"📊 Input DataFrame values: {input_df.iloc[0].to_dict()}")
+    
+    return input_df
 
 # ========================================
 # JWT AUTHENTICATION
@@ -433,88 +516,47 @@ def predict(user_id):
             form_data = request.form.to_dict()
         
         print(f"📥 Prediction request from user {user_id}")
-        print(f"📥 Received data: {form_data}")
+        print(f"📥 Received raw data: {form_data}")
         
-        # Convert all field names to lowercase for consistent processing
-        lowercase_form_data = {}
-        for key, value in form_data.items():
-            lowercase_key = key.lower()
-            lowercase_form_data[lowercase_key] = value
+        # Prepare input DataFrame in the correct format
+        input_df = prepare_input_dataframe(form_data)
         
-        # Define feature order (all lowercase now)
-        feature_names = [
-            'age_band_of_driver', 'sex_of_driver', 'educational_level',
-            'vehicle_driver_relation', 'driving_experience', 'type_of_vehicle',
-            'area_accident_occured', 'lanes_or_medians', 'types_of_junction',
-            'road_surface_type', 'light_conditions', 'weather_conditions',
-            'type_of_collision', 'number_of_vehicles_involved', 'vehicle_movement',
-            'pedestrian_movement', 'cause_of_accident'
-        ]
+        # Make prediction using the pipeline
+        print("🔮 Making prediction...")
+        prediction = model.predict(input_df)[0]
+        prediction_proba = model.predict_proba(input_df)[0]
         
-        input_features = []
-        feature_debug = {}
-        missing_features = []
+        print(f"🎯 Raw prediction: {prediction}")
+        print(f"🎯 Prediction probabilities: {prediction_proba}")
         
-        for feature_name in feature_names:
-            feature_value = lowercase_form_data.get(feature_name)
-            
-            if feature_value is None or feature_value == '':
-                missing_features.append(feature_name)
-                encoded_value = find_match(None, FEATURE_MAPPINGS[feature_name], feature_name)
-            else:
-                encoded_value = find_match(feature_value, FEATURE_MAPPINGS[feature_name], feature_name)
-            
-            input_features.append(encoded_value)
-            feature_debug[feature_name] = {
-                'original': feature_value, 
-                'encoded': encoded_value,
-                'available_options': list(FEATURE_MAPPINGS[feature_name].keys())
-            }
+        # Map prediction to severity label
+        severity_label = SEVERITY_LABELS.get(prediction, f'Unknown ({prediction})')
         
-        if missing_features:
-            print(f"⚠️ Missing features: {missing_features}")
+        # Create confidence scores
+        confidence_scores = {}
+        for i, prob in enumerate(prediction_proba):
+            severity_name = SEVERITY_LABELS.get(i, f'Class_{i}')
+            confidence_scores[severity_name] = round(float(prob), 4)
         
-        # Ensure we have the right number of features
-        if len(input_features) != len(feature_names):
-            return jsonify({
-                'error': f'Feature count mismatch. Expected {len(feature_names)}, got {len(input_features)}'
-            }), 400
-        
-        input_array = np.array(input_features).reshape(1, -1)
-        print(f"🔢 Input array shape: {input_array.shape}")
-        print(f"🔢 Input array: {input_array}")
-        
-        # Make prediction
-        prediction = model.predict(input_array)[0]
-        prediction_proba = model.predict_proba(input_array)[0]
-        
-        severity_label = SEVERITY_LABELS.get(prediction, 'Unknown')
-        
-        confidence_scores = {
-            SEVERITY_LABELS[i]: round(prob, 4)
-            for i, prob in enumerate(prediction_proba)
-        }
-        
-        print(f"✅ Prediction for user {user_id}: {severity_label}")
+        print(f"✅ Final prediction for user {user_id}: {severity_label}")
+        print(f"📊 Confidence scores: {confidence_scores}")
         
         return jsonify({
             'prediction': severity_label,
             'severity_label': severity_label,
             'confidence': confidence_scores,
-            'user_id': user_id,
-            'debug': {
-                'input_features': input_features,
-                'raw_prediction': int(prediction),
-                'missing_features': missing_features,
-                'feature_debug': feature_debug
-            }
+            'user_id': user_id
         })
         
     except Exception as e:
         print(f"❌ Prediction error: {str(e)}")
         import traceback
         print(f"❌ Traceback: {traceback.format_exc()}")
-        return jsonify({'error': str(e), 'traceback': traceback.format_exc()}), 500
+        return jsonify({
+            'error': str(e), 
+            'traceback': traceback.format_exc(),
+            'message': 'Prediction failed. Please check server logs for details.'
+        }), 500
 
 # ========================================
 # HEALTH CHECK
@@ -525,6 +567,7 @@ def health_check():
         'status': 'healthy',
         'message': 'Combined API is running',
         'model_loaded': model is not None,
+        'model_type': str(type(model)) if model else None,
         'database_connected': get_db_connection() is not None
     }), 200
 
@@ -545,4 +588,6 @@ def internal_error(error):
 if __name__ == '__main__':
     print("🚀 Combined Authentication & Prediction API starting...")
     print("📊 Model status:", "✅ Loaded" if model else "❌ Not loaded")
+    if model:
+        print(f"📊 Model type: {type(model)}")
     app.run(debug=True, host='0.0.0.0', port=5000)
