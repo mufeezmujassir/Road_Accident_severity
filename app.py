@@ -14,9 +14,9 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
 CORS(app, origins=['http://localhost:8000', 'http://127.0.0.1:8000'], supports_credentials=True)
 
-# ========================================
+
 # DATABASE CONFIGURATION
-# ========================================
+
 DB_CONFIG = {
     'host': 'localhost',
     'port': 3306,
@@ -57,9 +57,9 @@ def init_db():
 
 init_db()
 
-# ========================================
+
 # ML MODEL LOADING
-# ========================================
+
 try:
     with open('rf2_model.pkl', 'rb') as f:
         model = pickle.load(f)  # This should be your pipeline from the notebook
@@ -235,6 +235,10 @@ VALUE_MAPPINGS = {
         'not a pedestrian': 'not a pedestrian',
         'crossing from driver\'s nearside': 'crossing from driver\'s nearside',
         'crossing from driver\'s offside': 'crossing from driver\'s offside',
+        'crossing from nearside - masked by parked or stationot a pedestrianry vehicle': 'crossing from nearside - masked by parked or stationot a pedestrianry vehicle',
+        'crossing from offside - masked by  parked or stationot a pedestrianry vehicle': 'crossing from offside - masked by  parked or stationot a pedestrianry vehicle',
+        'standing in carriageway': 'standing in carriageway',
+        'in carriageway, stationot a pedestrianry - not crossing  (standing or playing)': 'in carriageway, stationot a pedestrianry - not crossing  (standing or playing)',
         'unknown': 'unknown'
     },
     'Cause_of_accident': {
@@ -339,9 +343,9 @@ def prepare_input_dataframe(form_data):
     
     return input_df
 
-# ========================================
+
 # JWT AUTHENTICATION
-# ========================================
+
 def generate_token(user_id):
     payload = {
         'user_id': user_id,
@@ -373,9 +377,9 @@ def require_auth(f):
     decorated_function.__name__ = f.__name__
     return decorated_function
 
-# ========================================
+
 # AUTHENTICATION ROUTES
-# ========================================
+
 @app.route('/api/register', methods=['POST'])
 def register():
     try:
@@ -488,9 +492,9 @@ def get_profile(user_id):
         print(f"Profile error: {e}")
         return jsonify({'message': 'Failed to get profile'}), 500
 
-# ========================================
+
 # ML PREDICTION ROUTES
-# ========================================
+
 @app.route('/')
 def home():
     return render_template('/index.html')
@@ -558,9 +562,9 @@ def predict(user_id):
             'message': 'Prediction failed. Please check server logs for details.'
         }), 500
 
-# ========================================
+
 # HEALTH CHECK
-# ========================================
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({
@@ -571,9 +575,9 @@ def health_check():
         'database_connected': get_db_connection() is not None
     }), 200
 
-# ========================================
+
 # ERROR HANDLERS
-# ========================================
+
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'message': 'Endpoint not found'}), 404
@@ -582,9 +586,9 @@ def not_found(error):
 def internal_error(error):
     return jsonify({'message': 'Internal server error'}), 500
 
-# ========================================
+
 # RUN APPLICATION
-# ========================================
+
 if __name__ == '__main__':
     print("🚀 Combined Authentication & Prediction API starting...")
     print("📊 Model status:", "✅ Loaded" if model else "❌ Not loaded")

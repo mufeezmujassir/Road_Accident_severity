@@ -6,6 +6,7 @@
     <title>AI-Powered Accident Severity Prediction</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -213,6 +214,31 @@
         .submit-container {
             text-align: center;
             margin-top: 2rem;
+        }
+
+        .charts-container {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-wrapper {
+            background: var(--light-color);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-title {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .chart-canvas {
+            max-height: 250px;
         }
     </style>
 </head>
@@ -475,6 +501,10 @@
                                 <option value="not a pedestrian">Not a Pedestrian</option>
                                 <option value="crossing from driver's nearside">Crossing from driver's nearside</option>
                                 <option value="crossing from driver's offside">Crossing from driver's offside</option>
+                                <option value="crossing from nearside - masked by parked or stationot a pedestrianry vehicle">crossing from nearside - masked by parked or stationot a pedestrianry vehicle</option>
+                                <option value="crossing from offside - masked by  parked or stationot a pedestrianry vehicle">crossing from offside - masked by  parked or stationot a pedestrianry vehicle</option>
+                                <option value="standing in carriageway">Standing in carriageway</option>
+                                <option value="in carriageway, stationot a pedestrianry - not crossing  (standing or playing)">in carriageway, stationot a pedestrianry - not crossing  (standing or playing)</option>
                                 <option value="unknown">Unknown</option>
                             </select>
                         </div>
@@ -524,11 +554,17 @@
                 <div id="predictionResult"></div>
                 <h5><i class="fas fa-percentage"></i> Confidence Scores</h5>
                 <div class="confidence-grid" id="confidenceGrid"></div>
+                <div class="charts-container" id="chartsContainer">
+                    <!-- Charts will be dynamically inserted here -->
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Global variables for charts
+        let barChart, pieChart, lineChart, doughnutChart;
+
         // Check authentication on page load
         const token = localStorage.getItem('token');
         const user = localStorage.getItem('user');
@@ -632,6 +668,166 @@
             }
         }
 
+        // Function to destroy existing charts
+        function destroyCharts() {
+            if (barChart) {
+                barChart.destroy();
+                barChart = null;
+            }
+            if (pieChart) {
+                pieChart.destroy();
+                pieChart = null;
+            }
+            if (lineChart) {
+                lineChart.destroy();
+                lineChart = null;
+            }
+            if (doughnutChart) {
+                doughnutChart.destroy();
+                doughnutChart = null;
+            }
+        }
+
+        // Function to render charts
+        function renderCharts(confidenceData) {
+            const container = document.getElementById('chartsContainer');
+            container.innerHTML = `
+                <div class="chart-wrapper">
+                    <div class="chart-title">Bar Chart - Severity Probabilities</div>
+                    <canvas id="barChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Pie Chart - Severity Distribution</div>
+                    <canvas id="pieChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Line Chart - Severity Probabilities</div>
+                    <canvas id="lineChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Doughnut Chart - Severity Overview</div>
+                    <canvas id="doughnutChart" class="chart-canvas"></canvas>
+                </div>
+            `;
+
+            const labels = Object.keys(confidenceData);
+            const data = Object.values(confidenceData).map(v => v * 100); // Convert to percentage
+            const colors = [
+                'rgba(220, 38, 38, 0.8)', // Fatal - red
+                'rgba(217, 119, 6, 0.8)',  // Serious - orange
+                'rgba(5, 150, 105, 0.8)'   // Slight - green
+            ];
+
+            // Bar Chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.8', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Line Chart (simple line for probabilities, treating categories as x-axis)
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            lineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: data,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Doughnut Chart (added new diagram)
+            const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+            doughnutChart = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '50%', // Makes it a doughnut (hole in center)
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
         // Form submission with proper backend alignment
         document.getElementById('predictionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -702,9 +898,13 @@
                             `;
                         }).join('');
                     
-                    // Scroll to results
-                    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
-                    
+                    // Save prediction result to localStorage
+                    localStorage.setItem('predictionResult', JSON.stringify({
+                        prediction: data.prediction,
+                        confidence: data.confidence
+                    }));
+                    // Redirect to result page
+                    window.location.href = 'prediction-result.html';
                 } else {
                     console.error('API Error:', data);
                     if (response.status === 401) {
