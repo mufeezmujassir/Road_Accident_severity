@@ -6,6 +6,7 @@
     <title>AI-Powered Accident Severity Prediction</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -183,6 +184,62 @@
             border-radius: 12px;
             text-align: center;
         }
+
+        .validation-message {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #dc2626;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .submit-container {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .charts-container {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-wrapper {
+            background: var(--light-color);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-title {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .chart-canvas {
+            max-height: 250px;
+        }
     </style>
 </head>
 <body>
@@ -201,46 +258,46 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Age Band of Driver</label>
-                            <select class="form-select" name="Age_band_of_driver" required>
+                            <select class="form-select" name="age_band_of_driver" required>
                                 <option value="">Select Age Band</option>
-                                <option value="18-30">18-30 (0)</option>
-                                <option value="31-50">31-50 (1)</option>
-                                <option value="Under 18">Under 18 (2)</option>
-                                <option value="Over 51">Over 51 (3)</option>
-                                <option value="Unknown">Unknown (4)</option>
+                                <option value="18-30">18-30</option>
+                                <option value="31-50">31-50</option>
+                                <option value="under 18">Under 18</option>
+                                <option value="over 51">Over 51</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Sex of Driver</label>
-                            <select class="form-select" name="Sex_of_driver" required>
+                            <select class="form-select" name="sex_of_driver" required>
                                 <option value="">Select Gender</option>
-                                <option value="Female">Female (0)</option>
-                                <option value="Male">Male (1)</option>
-                                <option value="Unknown">Unknown (2)</option>
+                                <option value="female">Female</option>
+                                <option value="male">Male</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Educational Level</label>
-                            <select class="form-select" name="Educational_level" required>
+                            <select class="form-select" name="educational_level" required>
                                 <option value="">Select Education Level</option>
-                                <option value="Above high school">Above high school (0)</option>
-                                <option value="Junior high school">Junior high school (1)</option>
-                                <option value="Elementary school">Elementary school (2)</option>
-                                <option value="High school">High school (3)</option>
-                                <option value="Unknown">Unknown (4)</option>
-                                <option value="Illiterate">Illiterate (5)</option>
-                                <option value="Writing & reading">Writing & reading (6)</option>
+                                <option value="above high school">Above high school</option>
+                                <option value="junior high school">Junior high school</option>
+                                <option value="elementary school">Elementary school</option>
+                                <option value="high school">High school</option>
+                                <option value="unknown">Unknown</option>
+                                <option value="illiterate">Illiterate</option>
+                                <option value="writing & reading">Writing & reading</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Vehicle Driver Relation</label>
-                            <select class="form-select" name="Vehicle_driver_relation" required>
+                            <select class="form-select" name="vehicle_driver_relation" required>
                                 <option value="">Select Relation</option>
-                                <option value="Employee">Employee (0)</option>
-                                <option value="Owner">Owner (1)</option>
-                                <option value="Other">Other (2)</option>
+                                <option value="employee">Employee</option>
+                                <option value="owner">Owner</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
                     </div>
@@ -252,28 +309,28 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Driving Experience</label>
-                            <select class="form-select" name="Driving_experience" required>
+                            <select class="form-select" name="driving_experience" required>
                                 <option value="">Select Experience</option>
-                                <option value="1-2yr">1-2yr (0)</option>
-                                <option value="2-5yr">2-5yr (1)</option>
-                                <option value="5-10yr">5-10yr (2)</option>
-                                <option value="Above 10yr">Above 10yr (3)</option>
-                                <option value="Below 1yr">Below 1yr (4)</option>
-                                <option value="No Licence">No Licence (5)</option>
-                                <option value="Unknown">Unknown (6)</option>
+                                <option value="1-2yr">1-2yr</option>
+                                <option value="2-5yr">2-5yr</option>
+                                <option value="5-10yr">5-10yr</option>
+                                <option value="above 10yr">Above 10yr</option>
+                                <option value="below 1yr">Below 1yr</option>
+                                <option value="no licence">No Licence</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Type of Vehicle</label>
-                            <select class="form-select" name="Type_of_vehicle" required>
+                            <select class="form-select" name="type_of_vehicle" required>
                                 <option value="">Select Vehicle Type</option>
-                                <option value="Car">Car (0)</option>
-                                <option value="Bus">Bus (1)</option>
-                                <option value="Lorry">Lorry/Truck (2)</option>
-                                <option value="Motorcycle">Motorcycle (3)</option>
-                                <option value="Three_wheeler">Three Wheeler (4)</option>
-                                <option value="Bicycle">Bicycle (5)</option>
-                                <option value="Other">Other (6)</option>
+                                <option value="car">Car</option>
+                                <option value="bus">Bus</option>
+                                <option value="lorry">Lorry/Truck</option>
+                                <option value="mootorbike">MotorBike</option>
+                                <option value="three_wheeler">Three Wheeler</option>
+                                <option value="bicycle">Bicycle</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
                     </div>
@@ -285,61 +342,61 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Area Where Accident Occurred</label>
-                            <select class="form-select" name="Area_accident_occured" required>
+                            <select class="form-select" name="area_accident_occured" required>
                                 <option value="">Select Area Type</option>
-                                <option value="Residential areas">Residential areas (0)</option>
-                                <option value="Office areas">Office areas (1)</option>
-                                <option value="Recreational areas">Recreational areas (2)</option>
-                                <option value="Industrial areas">Industrial areas (3)</option>
-                                <option value="School areas">School areas (4)</option>
-                                <option value="Market areas">Market areas (5)</option>
-                                <option value="Church areas">Church areas (6)</option>
-                                <option value="Hospital areas">Hospital areas (7)</option>
-                                <option value="Rural village areas">Rural village areas (8)</option>
-                                <option value="Outside rural areas">Outside rural areas (9)</option>
-                                <option value="Other">Other (10)</option>
-                                <option value="Unknown">Unknown (11)</option>
+                                <option value="residential areas">Residential areas</option>
+                                <option value="office areas">Office areas</option>
+                                <option value="recreational areas">Recreational areas</option>
+                                <option value="industrial areas">Industrial areas</option>
+                                <option value="school areas">School areas</option>
+                                <option value="market areas">Market areas</option>
+                                <option value="church areas">Church areas</option>
+                                <option value="hospital areas">Hospital areas</option>
+                                <option value="rural village areas">Rural village areas</option>
+                                <option value="outside rural areas">Outside rural areas</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Road Type (Lanes/Medians)</label>
-                            <select class="form-select" name="Lanes_or_Medians" required>
+                            <select class="form-select" name="lanes_or_medians" required>
                                 <option value="">Select Road Type</option>
-                                <option value="Undivided Two way">Undivided Two way (0)</option>
-                                <option value="One way">One way (1)</option>
-                                <option value="Two-way (divided with broken lines road marking)">Two-way (broken lines) (2)</option>
-                                <option value="Two-way (divided with solid lines road marking)">Two-way (solid lines) (3)</option>
-                                <option value="Double carriageway (median)">Double carriageway (median) (4)</option>
-                                <option value="other">Other (5)</option>
-                                <option value="Unknown">Unknown (6)</option>
+                                <option value="undivided two way">Undivided Two way</option>
+                                <option value="one way">One way</option>
+                                <option value="two-way (divided with broken lines road marking)">Two-way (broken lines)</option>
+                                <option value="two-way (divided with solid lines road marking)">Two-way (solid lines)</option>
+                                <option value="double carriageway (median)">Double carriageway (median)</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Type of Junction</label>
-                            <select class="form-select" name="Types_of_Junction" required>
+                            <select class="form-select" name="types_of_junction" required>
                                 <option value="">Select Junction</option>
-                                <option value="No junction">No junction (0)</option>
-                                <option value="Y Shape">Y Shape (1)</option>
-                                <option value="T Shape">T Shape (2)</option>
-                                <option value="X Shape">X Shape (3)</option>
-                                <option value="Crossing">Crossing (4)</option>
-                                <option value="O Shape">O Shape (Roundabout) (5)</option>
-                                <option value="Other">Other (6)</option>
-                                <option value="Unknown">Unknown (7)</option>
+                                <option value="no junction">No junction</option>
+                                <option value="y shape">Y Shape</option>
+                                <option value="t shape">T Shape</option>
+                                <option value="x shape">X Shape</option>
+                                <option value="crossing">Crossing</option>
+                                <option value="o shape">O Shape (Roundabout)</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Road Surface Type</label>
-                            <select class="form-select" name="Road_surface_type" required>
+                            <select class="form-select" name="road_surface_type" required>
                                 <option value="">Select Surface</option>
-                                <option value="Asphalt roads">Asphalt roads (0)</option>
-                                <option value="Earth roads">Earth roads (1)</option>
-                                <option value="Gravel roads">Gravel roads (2)</option>
-                                <option value="Asphalt roads with some distress">Asphalt roads with distress (3)</option>
-                                <option value="Other">Other (4)</option>
-                                <option value="Unknown">Unknown (5)</option>
+                                <option value="asphalt roads">Asphalt roads</option>
+                                <option value="earth roads">Earth roads</option>
+                                <option value="gravel roads">Gravel roads</option>
+                                <option value="asphalt roads with some distress">Asphalt roads with distress</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
@@ -351,28 +408,28 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Light Conditions</label>
-                            <select class="form-select" name="Light_conditions" required>
+                            <select class="form-select" name="light_conditions" required>
                                 <option value="">Select Lighting</option>
-                                <option value="Daylight">Daylight (0)</option>
-                                <option value="Darkness - lights lit">Darkness - lights lit (1)</option>
-                                <option value="Darkness - lights unlit">Darkness - lights unlit (2)</option>
-                                <option value="Darkness - no lighting">Darkness - no lighting (3)</option>
-                                <option value="Unknown">Unknown (4)</option>
+                                <option value="daylight">Daylight</option>
+                                <option value="darkness - lights lit">Darkness - lights lit</option>
+                                <option value="darkness - lights unlit">Darkness - lights unlit</option>
+                                <option value="darkness - no lighting">Darkness - no lighting</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Weather Conditions</label>
-                            <select class="form-select" name="Weather_conditions" required>
+                            <select class="form-select" name="weather_conditions" required>
                                 <option value="">Select Weather</option>
-                                <option value="Normal">Normal (0)</option>
-                                <option value="Raining">Raining (1)</option>
-                                <option value="Raining and Windy">Raining and Windy (2)</option>
-                                <option value="Cloudy">Cloudy (3)</option>
-                                <option value="Windy">Windy (4)</option>
-                                <option value="Snow">Snow (5)</option>
-                                <option value="Fog or mist">Fog or mist (6)</option>
-                                <option value="Other">Other (7)</option>
-                                <option value="Unknown">Unknown (8)</option>
+                                <option value="normal">Normal</option>
+                                <option value="raining">Raining</option>
+                                <option value="raining and windy">Raining and Windy</option>
+                                <option value="cloudy">Cloudy</option>
+                                <option value="windy">Windy</option>
+                                <option value="snow">Snow</option>
+                                <option value="fog or mist">Fog or mist</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
@@ -384,98 +441,103 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Type of Collision</label>
-                            <select class="form-select" name="Type_of_collision" required>
+                            <select class="form-select" name="type_of_collision" required>
                                 <option value="">Select Collision Type</option>
-                                <option value="Vehicle with vehicle collision">Vehicle with vehicle collision (0)</option>
-                                <option value="Collision with roadside objects">Collision with roadside objects (1)</option>
-                                <option value="Collision with pedestrians">Collision with pedestrians (2)</option>
-                                <option value="Rollover">Rollover (3)</option>
-                                <option value="Collision with animals">Collision with animals (4)</option>
-                                <option value="Collision with roadside-parked vehicles">Collision with parked vehicles (5)</option>
-                                <option value="Fall from vehicles">Fall from vehicles (6)</option>
-                                <option value="With Train">With Train (7)</option>
-                                <option value="Other">Other (8)</option>
-                                <option value="Unknown">Unknown (9)</option>
+                                <option value="vehicle with vehicle collision">Vehicle with vehicle collision</option>
+                                <option value="collision with roadside objects">Collision with roadside objects</option>
+                                <option value="collision with pedestrians">Collision with pedestrians</option>
+                                <option value="rollover">Rollover</option>
+                                <option value="collision with animals">Collision with animals</option>
+                                <option value="collision with roadside-parked vehicles">Collision with parked vehicles</option>
+                                <option value="fall from vehicles">Fall from vehicles</option>
+                                <option value="with train">With Train</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Number of Vehicles Involved</label>
-                            <select class="form-select" name="Number_of_vehicles_involved" required>
+                            <select class="form-select" name="number_of_vehicles_involved" required>
                                 <option value="">Select Count</option>
-                                <option value="1">1 (0)</option>
-                                <option value="2">2 (1)</option>
-                                <option value="3">3 (2)</option>
-                                <option value="4">4 (3)</option>
-                                <option value="6">6 (4)</option>
-                                <option value="7">7 (5)</option>
-                                <option value="Unknown">Unknown (6)</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Vehicle Movement</label>
-                            <select class="form-select" name="Vehicle_movement" required>
+                            <select class="form-select" name="vehicle_movement" required>
                                 <option value="">Select Movement</option>
-                                <option value="Going straight">Going straight (0)</option>
-                                <option value="Turning left">Turning left (1)</option>
-                                <option value="Turning right">Turning right (2)</option>
-                                <option value="Overtaking">Overtaking (3)</option>
-                                <option value="Changing lane to the left">Changing lane to the left (4)</option>
-                                <option value="Changing lane to the right">Changing lane to the right (5)</option>
-                                <option value="U-Turn">U-Turn (6)</option>
-                                <option value="Moving Backward">Moving Backward/Reversing (7)</option>
-                                <option value="Parked">Parked (8)</option>
-                                <option value="Stopped">Stopped/Stopping (9)</option>
-                                <option value="Entering a junction">Entering a junction (10)</option>
-                                <option value="Getting off">Getting off (11)</option>
-                                <option value="Waiting to go">Waiting to go (12)</option>
-                                <option value="Overturning">Overturning (13)</option>
-                                <option value="Other">Other (14)</option>
-                                <option value="Unknown">Unknown (15)</option>
+                                <option value="going straight">Going straight</option>
+                                <option value="turning left">Turning left</option>
+                                <option value="turning right">Turning right</option>
+                                <option value="overtaking">Overtaking</option>
+                                <option value="changing lane to the left">Changing lane to the left</option>
+                                <option value="changing lane to the right">Changing lane to the right</option>
+                                <option value="u-turn">U-Turn</option>
+                                <option value="moving backward">Moving Backward</option>
+                                <option value="parked">Parked</option>
+                                <option value="stopped">Stopped</option>
+                                <option value="entering a junction">Entering a junction</option>
+                                <option value="getting off">Getting off</option>
+                                <option value="waiting to go">Waiting to go</option>
+                                <option value="overturning">Overturning</option>
+                                <option value="turnover">Turnover</option>
+                                <option value="reversing">Reversing</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Pedestrian Movement</label>
-                            <select class="form-select" name="Pedestrian_movement" required>
+                            <select class="form-select" name="pedestrian_movement" required>
                                 <option value="">Select Movement</option>
-                                <option value="Not a Pedestrian">Not a Pedestrian (0)</option>
-                                <option value="Crossing from driver's nearside">Crossing from driver's nearside (1)</option>
-                                <option value="Crossing from driver's offside">Crossing from driver's offside (2)</option>
-                                <option value="Unknown">Unknown (3)</option>
+                                <option value="not a pedestrian">Not a Pedestrian</option>
+                                <option value="crossing from driver's nearside">Crossing from driver's nearside</option>
+                                <option value="crossing from driver's offside">Crossing from driver's offside</option>
+                                <option value="crossing from nearside - masked by parked or stationot a pedestrianry vehicle">crossing from nearside - masked by parked or stationot a pedestrianry vehicle</option>
+                                <option value="crossing from offside - masked by  parked or stationot a pedestrianry vehicle">crossing from offside - masked by  parked or stationot a pedestrianry vehicle</option>
+                                <option value="standing in carriageway">Standing in carriageway</option>
+                                <option value="in carriageway, stationot a pedestrianry - not crossing  (standing or playing)">in carriageway, stationot a pedestrianry - not crossing  (standing or playing)</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Primary Cause of Accident</label>
-                            <select class="form-select" name="Cause_of_accident" required>
+                            <select class="form-select" name="cause_of_accident" required>
                                 <option value="">Select Primary Cause</option>
-                                <option value="No distancing">No distancing (0)</option>
-                                <option value="Changing lane to the left">Changing lane to the left (1)</option>
-                                <option value="Changing lane to the right">Changing lane to the right (2)</option>
-                                <option value="Overtaking">Overtaking (3)</option>
-                                <option value="No priority to vehicle">No priority to vehicle (4)</option>
-                                <option value="No priority to pedestrian">No priority to pedestrian (5)</option>
-                                <option value="Moving Backward">Moving Backward (6)</option>
-                                <option value="Overspeed">Overspeed (7)</option>
-                                <option value="Driving carelessly">Driving carelessly (8)</option>
-                                <option value="Driving at high speed">Driving at high speed (9)</option>
-                                <option value="Driving under the influence of drugs">Driving under influence of drugs (10)</option>
-                                <option value="Drunk driving">Drunk driving (11)</option>
-                                <option value="Overloading">Overloading (12)</option>
-                                <option value="Getting off the vehicle improperly">Getting off vehicle improperly (13)</option>
-                                <option value="Driving to the left">Driving to the left (14)</option>
-                                <option value="Improper parking">Improper parking (15)</option>
-                                <option value="Turnover">Turnover (16)</option>
-                                <option value="Overturning">Overturning (17)</option>
-                                <option value="Other">Other (18)</option>
-                                <option value="Unknown">Unknown (19)</option>
+                                <option value="no distancing">No distancing</option>
+                                <option value="changing lane to the left">Changing lane to the left</option>
+                                <option value="changing lane to the right">Changing lane to the right</option>
+                                <option value="overtaking">Overtaking</option>
+                                <option value="no priority to vehicle">No priority to vehicle</option>
+                                <option value="no priority to pedestrian">No priority to pedestrian</option>
+                                <option value="moving backward">Moving Backward</option>
+                                <option value="overspeed">Overspeed</option>
+                                <option value="driving carelessly">Driving carelessly</option>
+                                <option value="driving at high speed">Driving at high speed</option>
+                                <option value="driving under the influence of drugs">Driving under influence of drugs</option>
+                                <option value="drunk driving">Drunk driving</option>
+                                <option value="overloading">Overloading</option>
+                                <option value="getting off the vehicle improperly">Getting off vehicle improperly</option>
+                                <option value="driving to the left">Driving to the left</option>
+                                <option value="improper parking">Improper parking</option>
+                                <option value="turnover">Turnover</option>
+                                <option value="overturning">Overturning</option>
+                                <option value="other">Other</option>
+                                <option value="unknown">Unknown</option>
                             </select>
                         </div>
                     </div>
                 </div>
-
 
                 <div class="submit-container">
                     <button type="submit" class="btn-predict" id="predictBtn">
@@ -492,18 +554,17 @@
                 <div id="predictionResult"></div>
                 <h5><i class="fas fa-percentage"></i> Confidence Scores</h5>
                 <div class="confidence-grid" id="confidenceGrid"></div>
-                
-                <div class="debug-info">
-                    <button type="button" class="debug-toggle" onclick="toggleDebug()">
-                        <i class="fas fa-code"></i> Show Debug Info
-                    </button>
-                    <div class="debug-content" id="debugContent"></div>
+                <div class="charts-container" id="chartsContainer">
+                    <!-- Charts will be dynamically inserted here -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Global variables for charts
+        let barChart, pieChart, lineChart, doughnutChart;
+
         // Check authentication on page load
         const token = localStorage.getItem('token');
         const user = localStorage.getItem('user');
@@ -550,32 +611,32 @@
         function validateForm(formData) {
             const errors = [];
             const requiredFields = [
-                'Age_band_of_driver', 'Sex_of_driver', 'Educational_level',
-                'Vehicle_driver_relation', 'Driving_experience', 'Type_of_vehicle',
-                'Area_accident_occured', 'Lanes_or_Medians', 'Types_of_Junction',
-                'Road_surface_type', 'Light_conditions', 'Weather_conditions',
-                'Type_of_collision', 'Number_of_vehicles_involved', 'Vehicle_movement',
-                'Pedestrian_movement', 'Cause_of_accident'
+                'age_band_of_driver', 'sex_of_driver', 'educational_level',
+                'vehicle_driver_relation', 'driving_experience', 'type_of_vehicle',
+                'area_accident_occured', 'lanes_or_medians', 'types_of_junction',
+                'road_surface_type', 'light_conditions', 'weather_conditions',
+                'type_of_collision', 'number_of_vehicles_involved', 'vehicle_movement',
+                'pedestrian_movement', 'cause_of_accident'
             ];
 
             const fieldLabels = {
-                'Age_band_of_driver': 'Age Band of Driver',
-                'Sex_of_driver': 'Sex of Driver',
-                'Educational_level': 'Educational Level',
-                'Vehicle_driver_relation': 'Vehicle Driver Relation',
-                'Driving_experience': 'Driving Experience',
-                'Type_of_vehicle': 'Type of Vehicle',
-                'Area_accident_occured': 'Area Accident Occurred',
-                'Lanes_or_Medians': 'Lanes or Medians',
-                'Types_of_Junction': 'Types of Junction',
-                'Road_surface_type': 'Road Surface Type',
-                'Light_conditions': 'Light Conditions',
-                'Weather_conditions': 'Weather Conditions',
-                'Type_of_collision': 'Type of Collision',
-                'Number_of_vehicles_involved': 'Number of Vehicles Involved',
-                'Vehicle_movement': 'Vehicle Movement',
-                'Pedestrian_movement': 'Pedestrian Movement',
-                'Cause_of_accident': 'Cause of Accident'
+                'age_band_of_driver': 'Age Band of Driver',
+                'sex_of_driver': 'Sex of Driver',
+                'educational_level': 'Educational Level',
+                'vehicle_driver_relation': 'Vehicle Driver Relation',
+                'driving_experience': 'Driving Experience',
+                'type_of_vehicle': 'Type of Vehicle',
+                'area_accident_occured': 'Area Accident Occurred',
+                'lanes_or_medians': 'Lanes or Medians',
+                'types_of_junction': 'Types of Junction',
+                'road_surface_type': 'Road Surface Type',
+                'light_conditions': 'Light Conditions',
+                'weather_conditions': 'Weather Conditions',
+                'type_of_collision': 'Type of Collision',
+                'number_of_vehicles_involved': 'Number of Vehicles Involved',
+                'vehicle_movement': 'Vehicle Movement',
+                'pedestrian_movement': 'Pedestrian Movement',
+                'cause_of_accident': 'Cause of Accident'
             };
 
             // Check for missing required fields
@@ -607,79 +668,183 @@
             }
         }
 
-        // Toggle debug information
-        function toggleDebug() {
-            const debugContent = document.getElementById('debugContent');
-            const debugToggle = document.querySelector('.debug-toggle');
-            
-            if (debugContent.style.display === 'none' || debugContent.style.display === '') {
-                debugContent.style.display = 'block';
-                debugToggle.innerHTML = '<i class="fas fa-code"></i> Hide Debug Info';
-            } else {
-                debugContent.style.display = 'none';
-                debugToggle.innerHTML = '<i class="fas fa-code"></i> Show Debug Info';
+        // Function to destroy existing charts
+        function destroyCharts() {
+            if (barChart) {
+                barChart.destroy();
+                barChart = null;
+            }
+            if (pieChart) {
+                pieChart.destroy();
+                pieChart = null;
+            }
+            if (lineChart) {
+                lineChart.destroy();
+                lineChart = null;
+            }
+            if (doughnutChart) {
+                doughnutChart.destroy();
+                doughnutChart = null;
             }
         }
 
-        // Normalize input values to lowercase for backend consistency
-        function normalizeFormData(formData) {
-            const normalized = {};
-            
-            // Convert all keys and values to lowercase
-            Object.keys(formData).forEach(key => {
-                const lowercaseKey = key.toLowerCase();
-                let value = formData[key];
-                
-                // Convert value to lowercase and handle special cases
-                if (value && value !== '') {
-                    value = value.toString().toLowerCase().trim();
-                    
-                    // Handle specific field normalizations
-                    if (lowercaseKey === 'type_of_vehicle') {
-                        // Map common variations
-                        const vehicleMap = {
-                            'motorcycle': 'motorcycle',
-                            'motorbike': 'motorcycle',
-                            'three wheeler': 'three_wheeler',
-                            'three_wheeler': 'three_wheeler'
-                        };
-                        value = vehicleMap[value] || value;
-                    }
-                    
-                    if (lowercaseKey === 'area_accident_occured') {
-                        // Handle area naming - keep as lowercase
-                        value = value.replace(/\s+areas?$/, ''); // Remove trailing "area" or "areas"
-                        // Don't add "areas" suffix - let backend handle it
+        // Function to render charts
+        function renderCharts(confidenceData) {
+            const container = document.getElementById('chartsContainer');
+            container.innerHTML = `
+                <div class="chart-wrapper">
+                    <div class="chart-title">Bar Chart - Severity Probabilities</div>
+                    <canvas id="barChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Pie Chart - Severity Distribution</div>
+                    <canvas id="pieChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Line Chart - Severity Probabilities</div>
+                    <canvas id="lineChart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Doughnut Chart - Severity Overview</div>
+                    <canvas id="doughnutChart" class="chart-canvas"></canvas>
+                </div>
+            `;
+
+            const labels = Object.keys(confidenceData);
+            const data = Object.values(confidenceData).map(v => v * 100); // Convert to percentage
+            const colors = [
+                'rgba(220, 38, 38, 0.8)', // Fatal - red
+                'rgba(217, 119, 6, 0.8)',  // Serious - orange
+                'rgba(5, 150, 105, 0.8)'   // Slight - green
+            ];
+
+            // Bar Chart
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.8', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
                     }
                 }
-                
-                normalized[lowercaseKey] = value || '';
             });
-            
-            return normalized;
+
+            // Pie Chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Line Chart (simple line for probabilities, treating categories as x-axis)
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            lineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: data,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Doughnut Chart (added new diagram)
+            const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+            doughnutChart = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '50%', // Makes it a doughnut (hole in center)
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
         }
 
-        // Form submission with comprehensive validation and error handling
+        // Form submission with proper backend alignment
         document.getElementById('predictionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const predictBtn = document.getElementById('predictBtn');
-            const originalFormData = Object.fromEntries(new FormData(this).entries());
+            const formData = Object.fromEntries(new FormData(this).entries());
             
             // Validate form
-            const validationErrors = validateForm(originalFormData);
+            const validationErrors = validateForm(formData);
             if (!showValidationMessage(validationErrors)) {
                 return; // Stop if validation fails
             }
             
-            // Normalize form data
-            const formData = normalizeFormData(originalFormData);
-            
             predictBtn.disabled = true;
             predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
             
-            console.log('Original form data:', originalFormData);
-            console.log('Normalized form data being sent:', formData);
+            console.log('Form data being sent:', formData);
             
             try {
                 const response = await fetch('http://localhost:5000/api/predict', {
@@ -733,25 +898,13 @@
                             `;
                         }).join('');
                     
-                    // Display debug information
-                    if (data.debug) {
-                        document.getElementById('debugContent').innerHTML = `
-                            <h6>Debug Information:</h6>
-                            <p><strong>Input Features Array:</strong> [${data.debug.input_features.join(', ')}]</p>
-                            <p><strong>Raw Prediction:</strong> ${data.debug.raw_prediction}</p>
-                            ${data.debug.missing_features?.length ? 
-                                `<p><strong>Missing Features:</strong> ${data.debug.missing_features.join(', ')}</p>` : ''
-                            }
-                            <details>
-                                <summary><strong>Feature Encoding Details:</strong></summary>
-                                <pre style="font-size: 0.8rem; margin-top: 0.5rem;">${JSON.stringify(data.debug.feature_debug, null, 2)}</pre>
-                            </details>
-                        `;
-                    }
-                    
-                    // Scroll to results
-                    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
-                    
+                    // Save prediction result to localStorage
+                    localStorage.setItem('predictionResult', JSON.stringify({
+                        prediction: data.prediction,
+                        confidence: data.confidence
+                    }));
+                    // Redirect to result page
+                    window.location.href = 'prediction-result.html';
                 } else {
                     console.error('API Error:', data);
                     if (response.status === 401) {
